@@ -1,5 +1,28 @@
+extern crate log;
+
+use std::fs::File;
+use std::io::Read;
+
+mod bot;
+mod bridge;
+mod client;
+mod projects;
+mod iot;
+mod other;
+mod sdk;
+mod server;
+
 fn main() {
     // 1. Open and parse the toml containing all data
+    const PROJECT_DATA_PATH: &str = "./projects.toml";
+    let mut file = File::open(PROJECT_DATA_PATH)
+        .expect("Unable to open file");
+    let mut template = String::new();
+    file.read_to_string(&mut template)
+        .expect("Unable to read file");
+
+    let projects: projects::Projects = toml::from_str(&template)
+        .expect("Unable to parse config file");
 
     // 2. Push to twim-config
     //   a. Open & parse twim-config toml file, and for each project:
