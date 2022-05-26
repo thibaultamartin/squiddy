@@ -28,3 +28,92 @@ pub struct Client {
     pub otherinstall_link: Option<Vec<String>>, // e.g. = ["https://element.io/get-started"]
     pub full_description: String,
 }
+
+impl Client {
+    pub fn to_markdown(&self) -> String {
+        let mut markdown = String::new();
+        markdown.push_str("---\n");
+        markdown.push_str(
+            &format!("layout: {}\n", self.layout)
+        );
+        markdown.push_str(
+            &format!("title: {}\n", self.title)
+        );
+        if let Some::<String>(slug) = &self.slug {
+            markdown.push_str(
+                &format!("slug: {}\n", slug)
+            ); 
+        }
+        markdown.push_str("categories:\n - client\n");
+        markdown.push_str(
+            &format!("description: {}\n", self.description)
+        );
+        markdown.push_str(
+            &format!("author: {}\n", self.author)
+        );
+        markdown.push_str(
+            &format!("maturity: {}\n", self.maturity)
+        );
+        markdown.push_str(
+            &format!("language: {}\n", self.language)
+        );
+        markdown.push_str(
+            &format!("licence: {}\n", self.licence)
+        );
+        if let Some::<String>(repository) = &self.repository {                
+            markdown.push_str(
+                &format!("repository: {}\n", repository)
+            );
+        }
+        if let Some::<String>(home) = &self.home {
+            markdown.push_str(
+                &format!("home: {}\n", home)
+            );
+        }
+        if let Some::<String>(screenshot) = &self.screenshot {
+            markdown.push_str(
+                &format!("screenshot: {}\n", screenshot)
+            );
+        }
+        if let Some::<String>(icon) = &self.icon {
+            markdown.push_str(
+                &format!("thumbnail: {}\n", icon)
+            );
+        }
+        if let Some::<String>(room) = &self.room {
+            markdown.push_str(
+                &format!("room: {}\n", room)
+            );
+        }
+        markdown.push_str("SDK: ");
+        for sdk in &self.sdk {
+            markdown.push_str(
+                &format!("{}, ", sdk)
+            );
+        }
+        markdown.pop();
+        markdown.pop();
+        markdown.push('\n');
+        markdown.push_str("platforms:\n");
+        for platform in &self.platforms {
+            markdown.push_str(
+                &format!("    - {}\n", platform)
+            );
+        }
+        markdown.push_str(
+            &format!("featured: {}\n", self.featured)
+        );
+        if let Some::<i32>(sort_order) = self.sort_order {
+            markdown.push_str(
+                &format!("sort_order: {}\n", sort_order)
+            );
+        }
+        // features
+        panic!("Features are not rendered");
+        markdown.push_str(
+            &format!("---\n{}\n", self.full_description)
+        );
+
+        markdown
+    }
+}
