@@ -17,9 +17,9 @@ pub struct Author {
 pub struct Projects {
     pub bots: Vec<Bot>,
     pub bridges: Vec<Bridge>,
-    // pub clients: Vec<Client>,
-    // pub iots: Vec<Iot>,
-    // pub others: Vec<Other>,
-    // pub sdks: Vec<Sdk>,
-    // pub servers: Vec<Server>,
+    pub clients: Vec<Client>,
+    pub iots: Vec<Iot>,
+    pub others: Vec<Other>,
+    pub sdks: Vec<Sdk>,
+    pub servers: Vec<Server>,
 }

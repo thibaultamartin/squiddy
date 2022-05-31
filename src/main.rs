@@ -12,7 +12,7 @@ mod twim_config;
 
 fn main() {
     // 1. Open and parse the toml containing all data
-    const PROJECT_DATA_PATH: &str = "./projects.toml";
+    const PROJECT_DATA_PATH: &str = "./data/projects.toml";
     const TWIM_CONFIG_PATH: &str = "../twim-config/config.toml";
     let projects_file = fs::read(PROJECT_DATA_PATH).expect("Unable to open master data file");
 
@@ -43,6 +43,15 @@ fn main() {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched += 1;
                 *twim_project = twim_config::Project::from(bridge);
+                break;
+            }
+        }
+
+        for client in &projects.clients {
+            if client.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(client);
                 break;
             }
         }
