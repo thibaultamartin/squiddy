@@ -55,6 +55,42 @@ fn main() {
                 break;
             }
         }
+
+        for iot in &projects.iots {
+            if iot.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(iot);
+                break;
+            }
+        }
+
+        for other in &projects.others {
+            if other.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(other);
+                break;
+            }
+        }
+
+        for sdk in &projects.sdks {
+            if sdk.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(sdk);
+                break;
+            }
+        }
+
+        for server in &projects.servers {
+            if server.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(server);
+                break;
+            }
+        }
     }
 
     fs::write(TWIM_CONFIG_PATH, toml::to_string(&twim_config).unwrap())
