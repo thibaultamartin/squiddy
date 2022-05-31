@@ -1,11 +1,13 @@
 use serde::{Deserialize, Serialize};
 
+use crate::projects::Author;
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Bot {
     pub layout: String, // e.g. "projectimage"
     pub title: String, // e.g. "Element Web/Desktop"
     pub description: String, // e.g. "Element is a glossy web client with an emphasis on performance and usability"
-    pub author: String, // e.g. "Element"
+    pub authors: Vec<Author>, // e.g. "Element"
     pub maturity: String, // e.g. "Stable"
     pub language: String, // e.g. "JavaScript"
     pub licence: String, // e.g. "Apache-2.0"
@@ -33,9 +35,12 @@ impl Bot {
         markdown.push_str(
             &format!("description: {}\n", self.description)
         );
-        markdown.push_str(
-            &format!("author: {}\n", self.author)
-        );
+        markdown.push_str("author: ");
+        for author in &self.authors {
+            markdown.push_str(
+                &format!("author: {} {}\n", author.name, author.matrix_id.clone().unwrap_or("".to_string()))
+            );
+        }
         markdown.push_str(
             &format!("maturity: {}\n", self.maturity)
         );

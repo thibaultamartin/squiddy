@@ -35,18 +35,23 @@ fn main() {
             if bot.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched = projects_matched + 1;
-                *twim_project = twim_config::Project::from_bot(&bot);
+                *twim_project = twim_config::Project::from(bot);
                 break;
             }
         }
+
         for bridge in &projects.bridges {
             if bridge.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
-              projects_matched = projects_matched + 1;
-              break;
+                projects_matched = projects_matched + 1;
+                *twim_project = twim_config::Project::from(bridge);
+                break;
             }
         }
     }
+
+    fs::write(TWIM_CONFIG_PATH, toml::to_string(&twim_config).unwrap())
+         .expect("Unable to write to twim-config");
 
     println!("TWIM Config contains {} projects", twim_config.projects.len());
     println!("{} of them are not known in the meta repository", twim_config.projects.len() - projects_matched);

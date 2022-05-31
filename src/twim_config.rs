@@ -1,8 +1,8 @@
 use std::clone;
-
+use convert_case::{Case, Casing};
 use serde::{Deserialize, Serialize};
 
-use crate::bot::Bot;
+use crate::{bot::Bot, bridge::Bridge};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Project {
@@ -39,16 +39,36 @@ pub struct Config {
     pub projects: Vec<Project>,
 }
 
-impl Project {
-    pub fn from_bot(bot: &Bot) -> Project {
+impl From<&Bot> for Project {
+    fn from(bot: &Bot) -> Self {
         Project {
-            emoji: bot.title.clone(),
-            name: bot.title.clone(), 
+            emoji: format!("{}?", bot.title.to_case(Case::Kebab)),
+            name: bot.title.to_case(Case::Kebab),
             title: bot.title.clone(), 
             description: bot.description.clone(), 
-            website: bot.home.clone().unwrap_or("".to_string()),
+            website: bot.home.clone().unwrap_or("".to_string()), // home if not null, or repo, or empty
             default_section: "bots".to_string(), 
-            usual_reporters: [bot.author.to_string()].to_vec()
+            usual_reporters:  bot.authors.iter()
+                                .filter(|author| author.matrix_id.is_some())
+                                .map(|author| author.matrix_id.clone().unwrap()) 
+                                .collect()
         }
     }
+}
+
+impl From<&Bridge> for Project {
+    fn from(bridge: &Bridge) -> Self {
+        Project {
+            emoji: format!("{}?", bridge.title.to_case(Case::Kebab)),
+            name: bridge.title.to_case(Case::Kebab),
+            title: bridge.title.clone(),
+            description: bridge.description.clone(),
+            website: bridge.home.clone().unwrap_or("".to_string()),
+            default_section: "bridges".to_string(),
+            usual_reporters:  bridge.authors.iter()
+                                .filter(|author| author.matrix_id.is_some())
+                                .map(|author| author.matrix_id.clone().unwrap()) 
+                                .collect()
+        }
+    } 
 }

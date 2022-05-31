@@ -8,12 +8,18 @@ use crate::sdk::Sdk;
 use crate::server::Server;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Author {
+    pub name: String,
+    pub matrix_id: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Projects {
     pub bots: Vec<Bot>,
     pub bridges: Vec<Bridge>,
-    pub clients: Vec<Client>,
-    pub iots: Vec<Iot>,
-    pub others: Vec<Other>,
-    pub sdks: Vec<Sdk>,
-    pub servers: Vec<Server>,
+    // pub clients: Vec<Client>,
+    // pub iots: Vec<Iot>,
+    // pub others: Vec<Other>,
+    // pub sdks: Vec<Sdk>,
+    // pub servers: Vec<Server>,
 }
