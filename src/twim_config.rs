@@ -46,7 +46,7 @@ impl Project {
             name: bot.title.clone(), 
             title: bot.title.clone(), 
             description: bot.description.clone(), 
-            website: match &bot.home { Some(home) => home.clone(), None => "".to_string() }, 
+            website: bot.home.clone().unwrap_or("".to_string()),
             default_section: "bots".to_string(), 
             usual_reporters: [bot.author.to_string()].to_vec()
         }
