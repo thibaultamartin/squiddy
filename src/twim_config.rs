@@ -1,7 +1,9 @@
 use convert_case::{Case, Casing};
 use serde::{Deserialize, Serialize};
 
-use crate::{bot::Bot, bridge::Bridge, client::Client, iot::Iot, other::Other, sdk::Sdk, server::Server};
+use crate::{
+    bot::Bot, bridge::Bridge, client::Client, iot::Iot, other::Other, sdk::Sdk, server::Server,
+};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Project {
@@ -105,7 +107,7 @@ impl From<&Client> for Project {
 }
 
 impl From<&Iot> for Project {
-    fn from (iot: &Iot) -> Self {
+    fn from(iot: &Iot) -> Self {
         Project {
             emoji: format!("{}?", iot.title.to_case(Case::Kebab)),
             name: iot.title.to_case(Case::Kebab),
@@ -127,7 +129,7 @@ impl From<&Iot> for Project {
 }
 
 impl From<&Other> for Project {
-    fn from (other: &Other) -> Self {
+    fn from(other: &Other) -> Self {
         Project {
             emoji: format!("{}?", other.title.to_case(Case::Kebab)),
             name: other.title.to_case(Case::Kebab),
@@ -149,7 +151,7 @@ impl From<&Other> for Project {
 }
 
 impl From<&Sdk> for Project {
-    fn from (sdk: &Sdk) -> Self {
+    fn from(sdk: &Sdk) -> Self {
         Project {
             emoji: format!("{}?", sdk.title.to_case(Case::Kebab)),
             name: sdk.title.to_case(Case::Kebab),
@@ -171,7 +173,7 @@ impl From<&Sdk> for Project {
 }
 
 impl From<&Server> for Project {
-    fn from (server: &Server) -> Self {
+    fn from(server: &Server) -> Self {
         Project {
             emoji: format!("{}?", server.title.to_case(Case::Kebab)),
             name: server.title.to_case(Case::Kebab),
