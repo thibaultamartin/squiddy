@@ -49,8 +49,7 @@ impl From<&Bot> for Project {
             website: bot.home.clone().unwrap_or("".to_string()), // home if not null, or repo, or empty
             default_section: "bots".to_string(), 
             usual_reporters:  bot.authors.iter()
-                                .filter(|author| author.matrix_id.is_some())
-                                .map(|author| author.matrix_id.clone().unwrap()) 
+                                .filter_map(|author| author.matrix_id.clone()) 
                                 .collect()
         }
     }
@@ -66,8 +65,7 @@ impl From<&Bridge> for Project {
             website: bridge.home.clone().unwrap_or("".to_string()),
             default_section: "bridges".to_string(),
             usual_reporters:  bridge.authors.iter()
-                                .filter(|author| author.matrix_id.is_some())
-                                .map(|author| author.matrix_id.clone().unwrap()) 
+                                .filter_map(|author| author.matrix_id.clone()) 
                                 .collect()
         }
     } 
