@@ -43,13 +43,19 @@ impl From<&Bot> for Project {
         Project {
             emoji: format!("{}?", bot.title.to_case(Case::Kebab)),
             name: bot.title.to_case(Case::Kebab),
-            title: bot.title.clone(), 
-            description: bot.description.clone(), 
-            website: if bot.home.is_some() { bot.home.clone().unwrap() } else if bot.repository.is_some() { bot.repository.clone().unwrap() } else { "".to_string() },
-            default_section: "bots".to_string(), 
-            usual_reporters:  bot.authors.iter()
-                                .filter_map(|author| author.matrix_id.clone()) 
-                                .collect()
+            title: bot.title.clone(),
+            description: bot.description.clone(),
+            website: bot
+                .home
+                .clone()
+                .or_else(|| bot.repository.clone())
+                .unwrap_or_default(),
+            default_section: "bots".to_string(),
+            usual_reporters: bot
+                .authors
+                .iter()
+                .filter_map(|author| author.matrix_id.clone())
+                .collect(),
         }
     }
 }
@@ -61,11 +67,17 @@ impl From<&Bridge> for Project {
             name: bridge.title.to_case(Case::Kebab),
             title: bridge.title.clone(),
             description: bridge.description.clone(),
-            website: if bridge.home.is_some() { bridge.home.clone().unwrap() } else if bridge.repository.is_some() { bridge.repository.clone().unwrap() } else { "".to_string() },
+            website: bridge
+                .home
+                .clone()
+                .or_else(|| bridge.repository.clone())
+                .unwrap_or_default(),
             default_section: "bridges".to_string(),
-            usual_reporters:  bridge.authors.iter()
-                                .filter_map(|author| author.matrix_id.clone()) 
-                                .collect()
+            usual_reporters: bridge
+                .authors
+                .iter()
+                .filter_map(|author| author.matrix_id.clone())
+                .collect(),
         }
-    } 
+    }
 }

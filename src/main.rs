@@ -3,9 +3,9 @@ use std::fs;
 mod bot;
 mod bridge;
 mod client;
-mod projects;
 mod iot;
 mod other;
+mod projects;
 mod sdk;
 mod server;
 mod twim_config;
@@ -14,21 +14,19 @@ fn main() {
     // 1. Open and parse the toml containing all data
     const PROJECT_DATA_PATH: &str = "./projects.toml";
     const TWIM_CONFIG_PATH: &str = "../twim-config/config.toml";
-    let projects_file = fs::read(PROJECT_DATA_PATH)
-        .expect("Unable to open master data file");
+    let projects_file = fs::read(PROJECT_DATA_PATH).expect("Unable to open master data file");
 
-    let projects: projects::Projects = toml::from_slice(&projects_file)
-        .expect("Unable to parse master data file");
+    let projects: projects::Projects =
+        toml::from_slice(&projects_file).expect("Unable to parse master data file");
 
     // 2. Push to twim-config
     //   a. Open & parse twim-config toml file, and for each project:
     //   b. Find & update (or add) the entry
     //   c. Write the file to disk
-    let  twim_config_file = fs::read(TWIM_CONFIG_PATH)
-        .expect("Unable to open twim config file");
-    let mut twim_config: twim_config::Config = toml::from_slice(&twim_config_file)
-        .expect("Unable to parse twim-config file");
-    
+    let twim_config_file = fs::read(TWIM_CONFIG_PATH).expect("Unable to open twim config file");
+    let mut twim_config: twim_config::Config =
+        toml::from_slice(&twim_config_file).expect("Unable to parse twim-config file");
+
     let mut projects_matched = 0;
     for twim_project in &mut twim_config.projects {
         for bot in &projects.bots {
@@ -51,10 +49,16 @@ fn main() {
     }
 
     fs::write(TWIM_CONFIG_PATH, toml::to_string(&twim_config).unwrap())
-         .expect("Unable to write to twim-config");
+        .expect("Unable to write to twim-config");
 
-    println!("TWIM Config contains {} projects", twim_config.projects.len());
-    println!("{} of them are not known in the meta repository", twim_config.projects.len() - projects_matched);
+    println!(
+        "TWIM Config contains {} projects",
+        twim_config.projects.len()
+    );
+    println!(
+        "{} of them are not known in the meta repository",
+        twim_config.projects.len() - projects_matched
+    );
     println!("{} of them were updated", projects_matched);
 
     // 3. Push to matrix.org
