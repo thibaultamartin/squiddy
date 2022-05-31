@@ -39,18 +39,20 @@ fn main() {
         .expect("Unable to parse twim-config");
     
     let mut projects_matched = 0;
-    for twim_project in &mut twim_config.projects {
+    for mut twim_project in &mut twim_config.projects {
         for bot in &projects.bots {
             if bot.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched = projects_matched + 1;
-                twim_project.title = "nope".to_string();
+                twim_project = &mut twim_config::Project::from_bot(&bot);
+                break;
             }
         }
         for bridge in &projects.bridges {
             if bridge.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
-                projects_matched = projects_matched + 1;
+              projects_matched = projects_matched + 1;
+              break;
             }
         }
     }

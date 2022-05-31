@@ -1,4 +1,8 @@
+use std::clone;
+
 use serde::{Deserialize, Serialize};
+
+use crate::bot::Bot;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Project {
@@ -33,4 +37,18 @@ pub struct Config {
     pub editors: Vec<String>,
     pub sections: Vec<Section>,
     pub projects: Vec<Project>,
+}
+
+impl Project {
+    pub fn from_bot(bot: &Bot) -> Project {
+        Project {
+            emoji: bot.title.clone(),
+            name: bot.title.clone(), 
+            title: bot.title.clone(), 
+            description: bot.description.clone(), 
+            website: match &bot.home { Some(home) => home.clone(), None => "".to_string() }, 
+            default_section: "bots".to_string(), 
+            usual_reporters: [bot.author.to_string()].to_vec()
+        }
+    }
 }
