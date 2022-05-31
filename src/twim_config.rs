@@ -45,7 +45,7 @@ impl From<&Bot> for Project {
             name: bot.title.to_case(Case::Kebab),
             title: bot.title.clone(), 
             description: bot.description.clone(), 
-            website: bot.home.clone().unwrap_or_else(|| "".to_string()), // home if not null, or repo, or empty
+            website: if bot.home.is_some() { bot.home.clone().unwrap() } else if bot.repository.is_some() { bot.repository.clone().unwrap() } else { "".to_string() },
             default_section: "bots".to_string(), 
             usual_reporters:  bot.authors.iter()
                                 .filter_map(|author| author.matrix_id.clone()) 
@@ -61,7 +61,7 @@ impl From<&Bridge> for Project {
             name: bridge.title.to_case(Case::Kebab),
             title: bridge.title.clone(),
             description: bridge.description.clone(),
-            website: bridge.home.clone().unwrap_or_else(|| "".to_string()),
+            website: if bridge.home.is_some() { bridge.home.clone().unwrap() } else if bridge.repository.is_some() { bridge.repository.clone().unwrap() } else { "".to_string() },
             default_section: "bridges".to_string(),
             usual_reporters:  bridge.authors.iter()
                                 .filter_map(|author| author.matrix_id.clone()) 
