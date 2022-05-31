@@ -1,4 +1,3 @@
-use std::clone;
 use convert_case::{Case, Casing};
 use serde::{Deserialize, Serialize};
 
@@ -46,7 +45,7 @@ impl From<&Bot> for Project {
             name: bot.title.to_case(Case::Kebab),
             title: bot.title.clone(), 
             description: bot.description.clone(), 
-            website: bot.home.clone().unwrap_or("".to_string()), // home if not null, or repo, or empty
+            website: bot.home.clone().unwrap_or_else(|| "".to_string()), // home if not null, or repo, or empty
             default_section: "bots".to_string(), 
             usual_reporters:  bot.authors.iter()
                                 .filter_map(|author| author.matrix_id.clone()) 
@@ -62,7 +61,7 @@ impl From<&Bridge> for Project {
             name: bridge.title.to_case(Case::Kebab),
             title: bridge.title.clone(),
             description: bridge.description.clone(),
-            website: bridge.home.clone().unwrap_or("".to_string()),
+            website: bridge.home.clone().unwrap_or_else(|| "".to_string()),
             default_section: "bridges".to_string(),
             usual_reporters:  bridge.authors.iter()
                                 .filter_map(|author| author.matrix_id.clone()) 

@@ -1,4 +1,4 @@
-use std::fs::{File, self};
+use std::fs;
 
 mod bot;
 mod bridge;
@@ -34,7 +34,7 @@ fn main() {
         for bot in &projects.bots {
             if bot.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
-                projects_matched = projects_matched + 1;
+                projects_matched += 1;
                 *twim_project = twim_config::Project::from(bot);
                 break;
             }
@@ -43,7 +43,7 @@ fn main() {
         for bridge in &projects.bridges {
             if bridge.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
-                projects_matched = projects_matched + 1;
+                projects_matched += 1;
                 *twim_project = twim_config::Project::from(bridge);
                 break;
             }

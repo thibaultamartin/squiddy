@@ -39,7 +39,7 @@ impl Bridge {
         markdown.push_str("author: ");
         for author in &self.authors {
             markdown.push_str(
-                &format!("author: {} {}\n", author.name, author.matrix_id.clone().unwrap_or("".to_string()))
+                &format!("author: {} {}\n", author.name, author.matrix_id.clone().unwrap_or_else(|| "".to_string()))
             );
         }
         markdown.push_str(
