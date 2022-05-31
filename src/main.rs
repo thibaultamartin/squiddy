@@ -1,5 +1,3 @@
-extern crate log;
-
 use std::fs::{File, self};
 
 mod bot;
