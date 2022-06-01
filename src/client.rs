@@ -48,7 +48,7 @@ pub struct Client {
     pub platforms: Vec<String>, // e.g. ["Linux", "macOS", "Windows", "DesktopWeb"]
     pub featured: bool,      // e.g. true
     pub sort_order: Option<i32>, // = 1
-    pub features: Features, // e.g. ["a", "b"]
+    pub features: Features,
     pub appstore_details: Option<AppStoreDetails>,
     pub playstore_app_id: Option<String>, // e.g. "im.vector.app"
     pub fdroid_app_id: Option<String>,    // e.g. "im.vector.app"

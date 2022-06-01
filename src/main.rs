@@ -118,7 +118,7 @@ fn main() {
     //     ii.   platforms()
     //     iii.  icon()
     //     iv.   name()
-    //     v.    desccription()
+    //     v.    description()
     //     vi.   homepage()
     //     vii.  author()
     //     viii. getMaturity()
