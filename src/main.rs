@@ -28,68 +28,149 @@ fn main() {
         toml::from_slice(&twim_config_file).expect("Unable to parse twim-config file");
 
     let mut projects_matched = 0;
-    for twim_project in &mut twim_config.projects {
-        for bot in &projects.bots {
+    let mut projects_added = 0;
+
+    println!(
+        "TWIM Config contains {} projects",
+        twim_config.projects.len()
+    );
+
+    for bot in &projects.bots {
+        let mut found = false;
+        for twim_project in &mut twim_config.projects {
             if bot.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched += 1;
                 *twim_project = twim_config::Project::from(bot);
+                found = true;
                 break;
             }
         }
 
-        for bridge in &projects.bridges {
+        if !found {
+            println!("Didn't find {} in twim-config, adding", bot.title);
+            projects_added += 1;
+            twim_config.projects.push(twim_config::Project::from(bot));
+        }
+    }
+
+    for bridge in &projects.bridges {
+        let mut found = false;
+        for twim_project in &mut twim_config.projects {
             if bridge.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched += 1;
                 *twim_project = twim_config::Project::from(bridge);
+                found = true;
                 break;
             }
         }
 
-        for client in &projects.clients {
+        if !found {
+            println!("Didn't find {} in twim-config, adding", bridge.title);
+            projects_added += 1;
+            twim_config
+                .projects
+                .push(twim_config::Project::from(bridge));
+        }
+    }
+
+    for client in &projects.clients {
+        let mut found = false;
+        for twim_project in &mut twim_config.projects {
             if client.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched += 1;
                 *twim_project = twim_config::Project::from(client);
+                found = true;
                 break;
             }
         }
 
-        for iot in &projects.iots {
+        if !found {
+            println!("Didn't find {} in twim-config, adding", client.title);
+            projects_added += 1;
+            twim_config
+                .projects
+                .push(twim_config::Project::from(client));
+        }
+    }
+
+    for iot in &projects.iots {
+        let mut found = false;
+        for twim_project in &mut twim_config.projects {
             if iot.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched += 1;
                 *twim_project = twim_config::Project::from(iot);
+                found = true;
                 break;
             }
         }
 
-        for other in &projects.others {
+        if !found {
+            println!("Didn't find {} in twim-config, adding", iot.title);
+            projects_added += 1;
+            twim_config.projects.push(twim_config::Project::from(iot));
+        }
+    }
+
+    for other in &projects.others {
+        let mut found = false;
+        for twim_project in &mut twim_config.projects {
             if other.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched += 1;
                 *twim_project = twim_config::Project::from(other);
+                found = true;
                 break;
             }
         }
 
-        for sdk in &projects.sdks {
+        if !found {
+            println!("Didn't find {} in twim-config, adding", other.title);
+            projects_added += 1;
+            twim_config.projects.push(twim_config::Project::from(other));
+        }
+    }
+
+    for sdk in &projects.sdks {
+        let mut found = false;
+        for twim_project in &mut twim_config.projects {
             if sdk.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched += 1;
                 *twim_project = twim_config::Project::from(sdk);
+                found = true;
                 break;
             }
         }
 
-        for server in &projects.servers {
+        if !found {
+            println!("Didn't find {} in twim-config, adding", sdk.title);
+            projects_added += 1;
+            twim_config.projects.push(twim_config::Project::from(sdk));
+        }
+    }
+
+    for server in &projects.servers {
+        let mut found = false;
+        for twim_project in &mut twim_config.projects {
             if server.title == twim_project.title {
                 println!("Found {} in data and twim-config", twim_project.title);
                 projects_matched += 1;
                 *twim_project = twim_config::Project::from(server);
+                found = true;
                 break;
             }
+        }
+
+        if !found {
+            println!("Didn't find {} in twim-config, adding", server.title);
+            projects_added += 1;
+            twim_config
+                .projects
+                .push(twim_config::Project::from(server));
         }
     }
 
@@ -97,14 +178,16 @@ fn main() {
         .expect("Unable to write to twim-config");
 
     println!(
-        "TWIM Config contains {} projects",
-        twim_config.projects.len()
-    );
-    println!(
         "{} of them are not known in the meta repository",
         twim_config.projects.len() - projects_matched
     );
+
+    println!(
+        "TWIM-Config now contains {} projects",
+        twim_config.projects.len()
+    );
     println!("{} of them were updated", projects_matched);
+    println!("{} were just added", projects_added);
 
     // 3. Push to matrix.org
     //   a. For each project, generate the markdown content
