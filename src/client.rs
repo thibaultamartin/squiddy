@@ -3,6 +3,32 @@ use serde::{Deserialize, Serialize};
 use crate::projects::Author;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Features {
+    pub e2ee: String,
+    pub widgets: String,
+    pub spaces: String,
+    pub room_directory: String,
+    pub read_receipts: String,
+    pub typing_indicators: String,
+    pub edits: String,
+    pub replies: String,
+    pub threads: String,
+    pub attachments: String,
+    pub multi_account: String,
+    pub registration: String,
+    pub calls: String,
+    pub reactions: String,
+    pub sso: String,
+    pub localised: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct AppStoreDetails {
+    pub org: String,
+    pub app_id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Client {
     pub layout: String,             // e.g. "projectimage"
     pub id: String,                 // e.g. "element.io"
@@ -22,8 +48,8 @@ pub struct Client {
     pub platforms: Vec<String>, // e.g. ["Linux", "macOS", "Windows", "DesktopWeb"]
     pub featured: bool,      // e.g. true
     pub sort_order: Option<i32>, // = 1
-    pub features: Vec<String>, // e.g. ["a", "b"]
-    //pub appstore_details = { org = "vector", app_id = "id1083446067" },
+    pub features: Features, // e.g. ["a", "b"]
+    pub appstore_details: Option<AppStoreDetails>,
     pub playstore_app_id: Option<String>, // e.g. "im.vector.app"
     pub fdroid_app_id: Option<String>,    // e.g. "im.vector.app"
     pub flathub_app_id: Option<String>,   // e.g. ""
