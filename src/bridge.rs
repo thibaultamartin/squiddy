@@ -1,3 +1,4 @@
+use convert_case::{Case, Casing};
 use serde::{Deserialize, Serialize};
 
 use crate::projects::Author;
@@ -10,7 +11,7 @@ pub struct Bridge {
     pub authors: Vec<Author>, // e.g. "Element"
     pub maturity: String,    // e.g. "Stable"
     pub language: String,    // e.g. "JavaScript"
-    pub licence: String,     // e.g. "Apache-2.0"
+    pub license: String,     // e.g. "Apache-2.0"
     pub repository: Option<String>, // e.g. "https://github.com/vector-im/element-web/"
     pub home: Option<String>, // e.g. "https://element.io/"
     pub screenshot: Option<String>, // e.g. "/docs/projects/images/riot-web-large.png"
@@ -30,19 +31,21 @@ impl Bridge {
         markdown.push_str(&format!("title: {}\n", self.title));
         markdown.push_str("categories:\n - bridge\n");
         markdown.push_str(&format!("description: {}\n", self.description));
-        markdown.push_str("author: ");
+        markdown.push_str("author:");
         for author in &self.authors {
             markdown.push_str(&format!(
-                "author: {} {}\n",
+                " {} {},",
                 author.name,
                 author.matrix_id.clone().unwrap_or_else(|| "".to_string())
             ));
         }
+        markdown.pop();
+        markdown.push('\n');
         markdown.push_str(&format!("maturity: {}\n", self.maturity));
         markdown.push_str(&format!("language: {}\n", self.language));
-        markdown.push_str(&format!("licence: {}\n", self.licence));
+        markdown.push_str(&format!("license: {}\n", self.license));
         if let Some::<String>(repository) = &self.repository {
-            markdown.push_str(&format!("repository: {}\n", repository));
+            markdown.push_str(&format!("repo: {}\n", repository));
         }
         if let Some::<String>(home) = &self.home {
             markdown.push_str(&format!("home: {}\n", home));
@@ -54,7 +57,7 @@ impl Bridge {
             markdown.push_str(&format!("thumbnail: {}\n", icon));
         }
         if let Some::<String>(room) = &self.room {
-            markdown.push_str(&format!("room: {}\n", room));
+            markdown.push_str(&format!("room: \"{}\"\n", room));
         }
         markdown.push_str(&format!("featured: {}\n", self.featured));
         if let Some::<i32>(sort_order) = self.sort_order {
@@ -70,5 +73,9 @@ impl Bridge {
         markdown.push_str(&format!("---\n{}\n", self.full_description));
 
         markdown
+    }
+
+    pub fn filename(&self) -> String {
+        format!("{}.mdx", self.title.to_case(Case::Kebab))
     }
 }

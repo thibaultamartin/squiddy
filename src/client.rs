@@ -1,3 +1,4 @@
+use convert_case::{Case, Casing};
 use serde::{Deserialize, Serialize};
 
 use crate::projects::Author;
@@ -38,7 +39,7 @@ pub struct Client {
     pub authors: Vec<Author>, // e.g. "Element"
     pub maturity: String,    // e.g. "Stable"
     pub language: String,    // e.g. "JavaScript"
-    pub licence: String,     // e.g. "Apache-2.0"
+    pub license: String,     // e.g. "Apache-2.0"
     pub repository: Option<String>, // e.g. "https://github.com/vector-im/element-web/"
     pub home: Option<String>, // e.g. "https://element.io/"
     pub screenshot: Option<String>, // e.g. "/docs/projects/images/riot-web-large.png"
@@ -68,19 +69,21 @@ impl Client {
         }
         markdown.push_str("categories:\n - client\n");
         markdown.push_str(&format!("description: {}\n", self.description));
-        markdown.push_str("author: ");
+        markdown.push_str("author:");
         for author in &self.authors {
             markdown.push_str(&format!(
-                "author: {} {}\n",
+                " {} {},",
                 author.name,
                 author.matrix_id.clone().unwrap_or_else(|| "".to_string())
             ));
         }
+        markdown.pop();
+        markdown.push('\n');
         markdown.push_str(&format!("maturity: {}\n", self.maturity));
         markdown.push_str(&format!("language: {}\n", self.language));
-        markdown.push_str(&format!("licence: {}\n", self.licence));
+        markdown.push_str(&format!("license: {}\n", self.license));
         if let Some::<String>(repository) = &self.repository {
-            markdown.push_str(&format!("repository: {}\n", repository));
+            markdown.push_str(&format!("repo: {}\n", repository));
         }
         if let Some::<String>(home) = &self.home {
             markdown.push_str(&format!("home: {}\n", home));
@@ -92,7 +95,7 @@ impl Client {
             markdown.push_str(&format!("thumbnail: {}\n", icon));
         }
         if let Some::<String>(room) = &self.room {
-            markdown.push_str(&format!("room: {}\n", room));
+            markdown.push_str(&format!("room: \"{}\"\n", room));
         }
         markdown.push_str("SDK: ");
         for sdk in &self.sdk {
@@ -109,10 +112,54 @@ impl Client {
         if let Some::<i32>(sort_order) = self.sort_order {
             markdown.push_str(&format!("sort_order: {}\n", sort_order));
         }
-        // features
-        panic!("Features are not rendered");
+        markdown.push_str("features:\n");
+        markdown.push_str(&format!("    e2ee: {}\n", self.features.e2ee));
+        markdown.push_str(&format!("    widgets: {}\n", self.features.widgets));
+        markdown.push_str(&format!("    spaces: {}\n", self.features.spaces));
+        markdown.push_str(&format!(
+            "    room_directory: {}\n",
+            self.features.room_directory
+        ));
+        markdown.push_str(&format!(
+            "    read_receipts: {}\n",
+            self.features.read_receipts
+        ));
+        markdown.push_str(&format!(
+            "    typing_indicators: {}\n",
+            self.features.typing_indicators
+        ));
+        markdown.push_str(&format!("    edits: {}\n", self.features.edits));
+        markdown.push_str(&format!("    replies: {}\n", self.features.replies));
+        markdown.push_str(&format!("    threads: {}\n", self.features.threads));
+        markdown.push_str(&format!("    attachments: {}\n", self.features.attachments));
+        markdown.push_str(&format!(
+            "    multi_account: {}\n",
+            self.features.multi_account
+        ));
+        markdown.push_str(&format!(
+            "    registration: {}\n",
+            self.features.registration
+        ));
+        markdown.push_str(&format!("    calls: {}\n", self.features.calls));
+        markdown.push_str(&format!("    reactions: {}\n", self.features.reactions));
+        markdown.push_str(&format!("    sso: {}\n", self.features.sso));
+        markdown.push_str(&format!("    localised: {}\n", self.features.localised));
         markdown.push_str(&format!("---\n{}\n", self.full_description));
 
         markdown
+    }
+
+    pub fn filename(&self) -> String {
+        let normalised_name: String = self
+            .title
+            .to_case(Case::Kebab)
+            .chars()
+            .map(|x| match x {
+                '/' => '-',
+                '\\' => '-',
+                _ => x,
+            })
+            .collect();
+        format!("{}.mdx", normalised_name)
     }
 }
