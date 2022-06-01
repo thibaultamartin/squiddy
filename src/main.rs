@@ -1,33 +1,110 @@
-extern crate log;
-
-use std::fs::File;
-use std::io::Read;
+use std::fs;
 
 mod bot;
 mod bridge;
 mod client;
-mod projects;
 mod iot;
 mod other;
+mod projects;
 mod sdk;
 mod server;
+mod twim_config;
 
 fn main() {
     // 1. Open and parse the toml containing all data
-    const PROJECT_DATA_PATH: &str = "./projects.toml";
-    let mut file = File::open(PROJECT_DATA_PATH)
-        .expect("Unable to open file");
-    let mut template = String::new();
-    file.read_to_string(&mut template)
-        .expect("Unable to read file");
+    const PROJECT_DATA_PATH: &str = "./data/projects.toml";
+    const TWIM_CONFIG_PATH: &str = "../twim-config/config.toml";
+    let projects_file = fs::read(PROJECT_DATA_PATH).expect("Unable to open master data file");
 
-    let projects: projects::Projects = toml::from_str(&template)
-        .expect("Unable to parse config file");
+    let projects: projects::Projects =
+        toml::from_slice(&projects_file).expect("Unable to parse master data file");
 
     // 2. Push to twim-config
     //   a. Open & parse twim-config toml file, and for each project:
     //   b. Find & update (or add) the entry
     //   c. Write the file to disk
+    let twim_config_file = fs::read(TWIM_CONFIG_PATH).expect("Unable to open twim config file");
+    let mut twim_config: twim_config::Config =
+        toml::from_slice(&twim_config_file).expect("Unable to parse twim-config file");
+
+    let mut projects_matched = 0;
+    for twim_project in &mut twim_config.projects {
+        for bot in &projects.bots {
+            if bot.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(bot);
+                break;
+            }
+        }
+
+        for bridge in &projects.bridges {
+            if bridge.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(bridge);
+                break;
+            }
+        }
+
+        for client in &projects.clients {
+            if client.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(client);
+                break;
+            }
+        }
+
+        for iot in &projects.iots {
+            if iot.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(iot);
+                break;
+            }
+        }
+
+        for other in &projects.others {
+            if other.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(other);
+                break;
+            }
+        }
+
+        for sdk in &projects.sdks {
+            if sdk.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(sdk);
+                break;
+            }
+        }
+
+        for server in &projects.servers {
+            if server.title == twim_project.title {
+                println!("Found {} in data and twim-config", twim_project.title);
+                projects_matched += 1;
+                *twim_project = twim_config::Project::from(server);
+                break;
+            }
+        }
+    }
+
+    fs::write(TWIM_CONFIG_PATH, toml::to_string(&twim_config).unwrap())
+        .expect("Unable to write to twim-config");
+
+    println!(
+        "TWIM Config contains {} projects",
+        twim_config.projects.len()
+    );
+    println!(
+        "{} of them are not known in the meta repository",
+        twim_config.projects.len() - projects_matched
+    );
+    println!("{} of them were updated", projects_matched);
 
     // 3. Push to matrix.org
     //   a. For each project, generate the markdown content
@@ -41,7 +118,7 @@ fn main() {
     //     ii.   platforms()
     //     iii.  icon()
     //     iv.   name()
-    //     v.    desccription()
+    //     v.    description()
     //     vi.   homepage()
     //     vii.  author()
     //     viii. getMaturity()

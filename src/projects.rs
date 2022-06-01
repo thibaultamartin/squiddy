@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use crate::bot::Bot;
 use crate::bridge::Bridge;
 use crate::client::Client;
@@ -6,6 +5,13 @@ use crate::iot::Iot;
 use crate::other::Other;
 use crate::sdk::Sdk;
 use crate::server::Server;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Author {
+    pub name: String,
+    pub matrix_id: Option<String>,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Projects {
