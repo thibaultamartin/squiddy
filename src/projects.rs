@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter, self};
+
 use crate::bot::Bot;
 use crate::bridge::Bridge;
 use crate::client::Client;
@@ -22,4 +24,23 @@ pub struct Projects {
     pub others: Vec<Other>,
     pub sdks: Vec<Sdk>,
     pub servers: Vec<Server>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum Maturity {
+    Alpha,
+    Beta,
+    Stable,
+    Obsolete,
+}
+
+impl Display for Maturity {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Maturity::Alpha => write!(f, "Alpha"),
+            Maturity::Beta => write!(f, "Beta"),
+            Maturity::Stable => write!(f, "Stable"),
+            Maturity::Obsolete => write!(f, "Obsolete"),
+        }
+    }
 }

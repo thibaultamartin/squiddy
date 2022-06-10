@@ -4,6 +4,7 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::projects::Author;
+use crate::projects::Maturity;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Features {
@@ -50,7 +51,7 @@ pub struct Client {
     pub slug: Option<String>,       // e.g. "element"
     pub description: String, // e.g. "Element is a glossy web client with an emphasis on performance and usability"
     pub authors: Vec<Author>, // e.g. "Element"
-    pub maturity: String,    // e.g. "Stable"
+    pub maturity: Maturity,    // e.g. "Stable"
     pub language: String,    // e.g. "JavaScript"
     pub license: String,     // e.g. "Apache-2.0"
     pub repository: Option<String>, // e.g. "https://github.com/vector-im/element-web/"
@@ -91,13 +92,13 @@ impl Client {
             .iter()
             .map(|p| {
                 match p {
-                    Linux => "    - Linux",
-                    Android => "    - Android",
-                    MacOS=> "    - macOS",
-                    IOS => "    - iOS",
-                    Windows => "    - Windows",
-                    DesktopWeb => "    - Web",
-                    MobileWeb => "    - Web",
+                    Platform::Linux => "    - Linux",
+                    Platform::Android => "    - Android",
+                    Platform::MacOS=> "    - macOS",
+                    Platform::IOS => "    - iOS",
+                    Platform::Windows => "    - Windows",
+                    Platform::DesktopWeb => "    - Web",
+                    Platform::MobileWeb => "    - Web",
             }})
             .format("\n");
         let featured = &self.featured;
@@ -188,7 +189,7 @@ impl Client {
         format!("{}.mdx", normalised_name)
     }
 
-    pub fn mto_filename(&self) -> String {
+    pub fn matrixto_filename(&self) -> String {
         self
         .title
         .to_case(Case::Camel)
@@ -201,20 +202,39 @@ impl Client {
         .collect()
     }
 
-    pub fn mto_js_file(&self) -> String {
-        "".to_string()
-    }
-
-    pub fn mto_data_file(&self) -> String {
+    pub fn matrixto_data_file(&self) -> String {
         let id = &self.id;
         let name = &self.title;
         let description = &self.description;
+        let maturity = format!("Maturity.{}", &self.maturity);
+
+        let authors = self
+            .authors
+            .iter()
+            .map(|a| format!("{} {}", a.name, a.matrix_id.clone().unwrap_or_default()))
+            .format(", ");
+
+        let platforms = self
+            .platforms
+            .iter()
+            .map(|p| {
+                match p {
+                    Platform::Linux => "Platform.Linux",
+                    Platform::Android => "Platform.Android",
+                    Platform::MacOS=> "Platform.macOS",
+                    Platform::IOS => "Platform.iOS",
+                    Platform::Windows => "Platform.Windows",
+                    Platform::DesktopWeb => "Platform.DesktopWeb",
+                    Platform::MobileWeb => "Platform.MobileWeb",
+                }
+            })
+            .join(", ");
 
         let optional_fields = [
-            self.icon.as_ref().map(|i| format!("\"icon\": {}", i)),
-            self.home.as_ref().map(|h| format!("\"home\": {}", h)),
+            self.icon.as_ref().map(|i| format!("\"icon\": \"{}\"", i)),
+            self.home.as_ref().map(|h| format!("\"home\": \"{}\"", h)),
             self.appstore_details.as_ref().map(|ad| format!("\"applestorelink\": new AppleStoreLink('{}', '{}')", ad.org, ad.app_id)),
-            self.apple_associated_app_id.as_ref().map(|a| format!("\"appleAssociatedAppId\": {}", a)),
+            self.apple_associated_app_id.as_ref().map(|a| format!("\"appleAssociatedAppId\": \"{}\"", a)),
             self.playstore_app_id.as_ref().map(|p| format!("\"playstorelink\": new PlayStoreLink('{}')", p)),
             self.fdroid_app_id.as_ref().map(|f| format!("\"fdroidlink\": new FDroidLink('{}')", f)),
             self.flathub_app_id.as_ref().map(|f| format!("\"flathublink\": new FlathubLink('{}')", f)),
@@ -229,11 +249,11 @@ impl Client {
 
         export const data = {{
             \"id\": \"{id}\",
-            \"platforms\": [Platform.Android, Platform.iOS, Platform.Windows, Platform.macOS, Platform.Linux, Platform.DesktopWeb],
+            \"platforms\": [{platforms}],
             \"name\": \"{name}\",
             \"description\": \"{description}\",
-            \"author\": \"Element\",
-            \"maturity\": Maturity.Stable,
+            \"author\": \"{authors}\",
+            \"maturity\": \"{maturity}\",
             {optional_fields}
         }};")
     }

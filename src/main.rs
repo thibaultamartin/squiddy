@@ -11,19 +11,15 @@ mod server;
 mod twim_config;
 
 fn main() {
-    // 1. Open and parse the toml containing all data
     const PROJECT_DATA_PATH: &str = "./data/projects.toml";
     const TWIM_CONFIG_PATH: &str = "../twim-config/config.toml";
     const MATRIXDOTORG_PROJECTS_PATH: &str = "../matrix.org/gatsby/content/projects";
+    const MATRIXTO_PROJECTS_PATH: &str = "../matrix.to/src/open/clients";
     let projects_file = fs::read(PROJECT_DATA_PATH).expect("Unable to open master data file");
 
     let projects: projects::Projects =
         toml::from_slice(&projects_file).expect("Unable to parse master data file");
 
-    // 2. Push to twim-config
-    //   a. Open & parse twim-config toml file, and for each project:
-    //   b. Find & update (or add) the entry
-    //   c. Write the file to disk
     let twim_config_file = fs::read(TWIM_CONFIG_PATH).expect("Unable to open twim config file");
     let mut twim_config: twim_config::Config =
         toml::from_slice(&twim_config_file).expect("Unable to parse twim-config file");
@@ -119,6 +115,18 @@ fn main() {
         fs::write(&matrixdotorg_project_path, client.to_markdown()).unwrap_or_else(|_| {
             panic!("Could not write project file {}", matrixdotorg_project_path)
         });
+
+        let matrixto_project_path = format!(
+            "{}/{}Data.js",
+            MATRIXTO_PROJECTS_PATH,
+            client.matrixto_filename()
+        );
+        fs::write(&matrixto_project_path, client.matrixto_data_file()).unwrap_or_else(|_| {
+            panic!("Could not write project file {}", matrixto_project_path)
+        });
+
+        // TODO write project js from template if it doesn't already exist
+        // TODO update index.js after the loop
     }
 
     for iot in &projects.iots {
@@ -241,22 +249,4 @@ fn main() {
     println!("{} of them were updated", twim_projects_matched);
     println!("{} were just added", twim_projects_added);
 
-    // 3. Push to matrix.org
-    //   a. For each project, generate the markdown content
-    //   b. Find the file for the project, or create it if it doesn't exist
-    //   c. Override content of the file with generated markdown
-
-    // 4. Push to matrix.to
-    //   a. For each project, find the project's file or create one if needed
-    //   b. Find the following functions and update their body
-    //     i.    id()
-    //     ii.   platforms()
-    //     iii.  icon()
-    //     iv.   name()
-    //     v.    description()
-    //     vi.   homepage()
-    //     vii.  author()
-    //     viii. getMaturity()
-    //     ix.   getInstallLinks()
-    //   c. Write the file to disk
 }
