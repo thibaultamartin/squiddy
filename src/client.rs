@@ -140,7 +140,7 @@ impl Client {
                 Edits: {edits}
                 Replies: {replies}
                 Threads: {threads}
-                Attachements: {attachments}
+                Attachments: {attachments}
                 Multi accounts: {multi_account}
                 Registration: {registration}
                 Calls: {calls}
