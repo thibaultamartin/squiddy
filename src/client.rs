@@ -32,6 +32,17 @@ pub struct AppStoreDetails {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum Platform {
+    Linux,
+    Android,
+    MacOS,
+    IOS,
+    Windows,
+    DesktopWeb,
+    MobileWeb,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Client {
     pub layout: String,             // e.g. "projectimage"
     pub id: String,                 // e.g. "element.io"
@@ -48,15 +59,16 @@ pub struct Client {
     pub icon: Option<String>, // e.g. "/docs/projects/images/riot-web-small.png"
     pub room: Option<String>, // e.g. "#element-web:matrix.org"
     pub sdk: Vec<String>,    // e.g. ["matrix-js-sdk", "matrix-react-sdk"]
-    pub platforms: Vec<String>, // e.g. ["Linux", "macOS", "Windows", "DesktopWeb"]
+    pub platforms: Vec<Platform>, // e.g. ["Linux", "macOS", "Windows", "DesktopWeb"]
     pub featured: bool,      // e.g. true
     pub sort_order: Option<i32>, // = 1
     pub features: Features,
     pub appstore_details: Option<AppStoreDetails>,
+    pub apple_associated_app_id: Option<String>,
     pub playstore_app_id: Option<String>, // e.g. "im.vector.app"
     pub fdroid_app_id: Option<String>,    // e.g. "im.vector.app"
     pub flathub_app_id: Option<String>,   // e.g. ""
-    pub otherinstall_link: Option<Vec<String>>, // e.g. = ["https://element.io/get-started"]
+    pub otherinstall_link: Option<String>, // e.g. = ["https://element.io/get-started"]
     pub full_description: String,
 }
 
@@ -77,7 +89,16 @@ impl Client {
         let platforms = self
             .platforms
             .iter()
-            .map(|p| format!("    - {}", p))
+            .map(|p| {
+                match p {
+                    Linux => "    - Linux",
+                    Android => "    - Android",
+                    MacOS=> "    - macOS",
+                    IOS => "    - iOS",
+                    Windows => "    - Windows",
+                    DesktopWeb => "    - Web",
+                    MobileWeb => "    - Web",
+            }})
             .format("\n");
         let featured = &self.featured;
         // Destructuring features to make the compiler scream if new fields are added and not rendered in markdown
@@ -165,5 +186,55 @@ impl Client {
             })
             .collect();
         format!("{}.mdx", normalised_name)
+    }
+
+    pub fn mto_filename(&self) -> String {
+        self
+        .title
+        .to_case(Case::Camel)
+        .chars()
+        .map(|x| match x {
+            '/' => '-',
+            '\\' => '-',
+            _ => x,
+        })
+        .collect()
+    }
+
+    pub fn mto_js_file(&self) -> String {
+        "".to_string()
+    }
+
+    pub fn mto_data_file(&self) -> String {
+        let id = &self.id;
+        let name = &self.title;
+        let description = &self.description;
+
+        let optional_fields = [
+            self.icon.as_ref().map(|i| format!("\"icon\": {}", i)),
+            self.home.as_ref().map(|h| format!("\"home\": {}", h)),
+            self.appstore_details.as_ref().map(|ad| format!("\"applestorelink\": new AppleStoreLink('{}', '{}')", ad.org, ad.app_id)),
+            self.apple_associated_app_id.as_ref().map(|a| format!("\"appleAssociatedAppId\": {}", a)),
+            self.playstore_app_id.as_ref().map(|p| format!("\"playstorelink\": new PlayStoreLink('{}')", p)),
+            self.fdroid_app_id.as_ref().map(|f| format!("\"fdroidlink\": new FDroidLink('{}')", f)),
+            self.flathub_app_id.as_ref().map(|f| format!("\"flathublink\": new FlathubLink('{}')", f)),
+            self.otherinstall_link.as_ref().map(|o| format!("\"defaultInstallLink\": new WebsiteLink('{}')", o)),
+        ]
+        .iter()
+        .flatten()
+        .join(",\n");
+
+        formatdoc!("
+        import {{Maturity, Platform, FDroidLink, AppleStoreLink, PlayStoreLink, WebsiteLink, FlathubLink}} from \"../types.js\";
+
+        export const data = {{
+            \"id\": \"{id}\",
+            \"platforms\": [Platform.Android, Platform.iOS, Platform.Windows, Platform.macOS, Platform.Linux, Platform.DesktopWeb],
+            \"name\": \"{name}\",
+            \"description\": \"{description}\",
+            \"author\": \"Element\",
+            \"maturity\": Maturity.Stable,
+            {optional_fields}
+        }};")
     }
 }
