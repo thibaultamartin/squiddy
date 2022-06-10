@@ -1,4 +1,6 @@
 use convert_case::{Case, Casing};
+use indoc::formatdoc;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::projects::Author;
@@ -24,47 +26,49 @@ pub struct Iot {
 
 impl Iot {
     pub fn to_markdown(&self) -> String {
-        let mut markdown = String::new();
-        markdown.push_str("---\n");
-        markdown.push_str(&format!("layout: {}\n", self.layout));
-        markdown.push_str(&format!("title: {}\n", self.title));
-        markdown.push_str("categories:\n - iot\n");
-        markdown.push_str(&format!("description: {}\n", self.description));
-        markdown.push_str("author:");
-        for author in &self.authors {
-            markdown.push_str(&format!(
-                " {} {},",
-                author.name,
-                author.matrix_id.clone().unwrap_or_else(|| "".to_string())
-            ));
-        }
-        markdown.pop();
-        markdown.push('\n');
-        markdown.push_str(&format!("maturity: {}\n", self.maturity));
-        markdown.push_str(&format!("language: {}\n", self.language));
-        markdown.push_str(&format!("license: {}\n", self.license));
-        if let Some::<String>(repository) = &self.repository {
-            markdown.push_str(&format!("repo: {}\n", repository));
-        }
-        if let Some::<String>(home) = &self.home {
-            markdown.push_str(&format!("home: {}\n", home));
-        }
-        if let Some::<String>(screenshot) = &self.screenshot {
-            markdown.push_str(&format!("screenshot: {}\n", screenshot));
-        }
-        if let Some::<String>(icon) = &self.icon {
-            markdown.push_str(&format!("thumbnail: {}\n", icon));
-        }
-        if let Some::<String>(room) = &self.room {
-            markdown.push_str(&format!("room: \"{}\"\n", room));
-        }
-        markdown.push_str(&format!("featured: {}\n", self.featured));
-        if let Some::<i32>(sort_order) = self.sort_order {
-            markdown.push_str(&format!("sort_order: {}\n", sort_order));
-        }
-        markdown.push_str(&format!("---\n{}\n", self.full_description));
+        let layout = &self.layout;
+        let title = &self.title;
+        let description = &self.description;
+        let authors = self
+            .authors
+            .iter()
+            .map(|a| format!("{} {}", a.name, a.matrix_id.clone().unwrap_or_default()))
+            .format(", ");
+        let maturity = &self.maturity;
+        let language = &self.language;
+        let license = &self.license;
+        let featured = &self.featured;
 
-        markdown
+        let optional_fields = [
+            self.repository.as_ref().map(|r| format!("repo: {r}")),
+            self.home.as_ref().map(|h| format!("home: {h}")),
+            self.screenshot.as_ref().map(|s| format!("screenshot: {s}")),
+            self.icon.as_ref().map(|i| format!("thumbnail: {i}")),
+            self.room.as_ref().map(|r| format!("room: \"{r}\"")),
+            self.sort_order.as_ref().map(|o| format!("sort_order: {o}")),
+        ]
+        .iter()
+        .flatten()
+        .join("\n");
+
+        let full_description = &self.full_description;
+
+        formatdoc! {"
+            ---
+            layout: {layout}
+            title: {title}
+            categories:
+             - iot
+            description: {description}
+            author: {authors}
+            maturity: {maturity}
+            language: {language}
+            license: {license}
+            featured: {featured}
+            {optional_fields}
+            ---
+            {full_description}
+        "}
     }
 
     pub fn filename(&self) -> String {

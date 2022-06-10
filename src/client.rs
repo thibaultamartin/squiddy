@@ -1,4 +1,6 @@
 use convert_case::{Case, Casing};
+use indoc::formatdoc;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::projects::Author;
@@ -60,93 +62,95 @@ pub struct Client {
 
 impl Client {
     pub fn to_markdown(&self) -> String {
-        let mut markdown = String::new();
-        markdown.push_str("---\n");
-        markdown.push_str(&format!("layout: {}\n", self.layout));
-        markdown.push_str(&format!("title: {}\n", self.title));
-        if let Some::<String>(slug) = &self.slug {
-            markdown.push_str(&format!("slug: {}\n", slug));
-        }
-        markdown.push_str("categories:\n - client\n");
-        markdown.push_str(&format!("description: {}\n", self.description));
-        markdown.push_str("author:");
-        for author in &self.authors {
-            markdown.push_str(&format!(
-                " {} {},",
-                author.name,
-                author.matrix_id.clone().unwrap_or_else(|| "".to_string())
-            ));
-        }
-        markdown.pop();
-        markdown.push('\n');
-        markdown.push_str(&format!("maturity: {}\n", self.maturity));
-        markdown.push_str(&format!("language: {}\n", self.language));
-        markdown.push_str(&format!("license: {}\n", self.license));
-        if let Some::<String>(repository) = &self.repository {
-            markdown.push_str(&format!("repo: {}\n", repository));
-        }
-        if let Some::<String>(home) = &self.home {
-            markdown.push_str(&format!("home: {}\n", home));
-        }
-        if let Some::<String>(screenshot) = &self.screenshot {
-            markdown.push_str(&format!("screenshot: {}\n", screenshot));
-        }
-        if let Some::<String>(icon) = &self.icon {
-            markdown.push_str(&format!("thumbnail: {}\n", icon));
-        }
-        if let Some::<String>(room) = &self.room {
-            markdown.push_str(&format!("room: \"{}\"\n", room));
-        }
-        markdown.push_str("SDK: ");
-        for sdk in &self.sdk {
-            markdown.push_str(&format!("{}, ", sdk));
-        }
-        markdown.pop();
-        markdown.pop();
-        markdown.push('\n');
-        markdown.push_str("platforms:\n");
-        for platform in &self.platforms {
-            markdown.push_str(&format!("    - {}\n", platform));
-        }
-        markdown.push_str(&format!("featured: {}\n", self.featured));
-        if let Some::<i32>(sort_order) = self.sort_order {
-            markdown.push_str(&format!("sort_order: {}\n", sort_order));
-        }
-        markdown.push_str("features:\n");
-        markdown.push_str(&format!("    e2ee: {}\n", self.features.e2ee));
-        markdown.push_str(&format!("    widgets: {}\n", self.features.widgets));
-        markdown.push_str(&format!("    spaces: {}\n", self.features.spaces));
-        markdown.push_str(&format!(
-            "    room_directory: {}\n",
-            self.features.room_directory
-        ));
-        markdown.push_str(&format!(
-            "    read_receipts: {}\n",
-            self.features.read_receipts
-        ));
-        markdown.push_str(&format!(
-            "    typing_indicators: {}\n",
-            self.features.typing_indicators
-        ));
-        markdown.push_str(&format!("    edits: {}\n", self.features.edits));
-        markdown.push_str(&format!("    replies: {}\n", self.features.replies));
-        markdown.push_str(&format!("    threads: {}\n", self.features.threads));
-        markdown.push_str(&format!("    attachments: {}\n", self.features.attachments));
-        markdown.push_str(&format!(
-            "    multi_account: {}\n",
-            self.features.multi_account
-        ));
-        markdown.push_str(&format!(
-            "    registration: {}\n",
-            self.features.registration
-        ));
-        markdown.push_str(&format!("    calls: {}\n", self.features.calls));
-        markdown.push_str(&format!("    reactions: {}\n", self.features.reactions));
-        markdown.push_str(&format!("    sso: {}\n", self.features.sso));
-        markdown.push_str(&format!("    localised: {}\n", self.features.localised));
-        markdown.push_str(&format!("---\n{}\n", self.full_description));
+        let layout = &self.layout;
+        let title = &self.title;
+        let description = &self.description;
+        let authors = self
+            .authors
+            .iter()
+            .map(|a| format!("{} {}", a.name, a.matrix_id.clone().unwrap_or_default()))
+            .format(", ");
+        let maturity = &self.maturity;
+        let language = &self.language;
+        let license = &self.license;
+        let sdk = self.sdk.iter().map(|s| format!("    - {}", s)).format("\n");
+        let platforms = self
+            .platforms
+            .iter()
+            .map(|p| format!("    - {}", p))
+            .format("\n");
+        let featured = &self.featured;
+        // Destructuring features to make the compiler scream if new fields are added and not rendered in markdown
+        let Features {
+            e2ee,
+            widgets,
+            spaces,
+            room_directory,
+            read_receipts,
+            typing_indicators,
+            edits,
+            replies,
+            threads,
+            attachments,
+            multi_account,
+            registration,
+            calls,
+            reactions,
+            sso,
+            localised,
+        } = &self.features;
+        let full_description = &self.full_description;
 
-        markdown
+        let optional_fields = [
+            self.slug.as_ref().map(|s| format!("slug: {}", s)),
+            self.repository.as_ref().map(|r| format!("repo: {r}")),
+            self.home.as_ref().map(|h| format!("home: {h}")),
+            self.screenshot.as_ref().map(|s| format!("screenshot: {s}")),
+            self.icon.as_ref().map(|i| format!("thumbnail: {i}")),
+            self.room.as_ref().map(|r| format!("room: \"{r}\"")),
+            self.sort_order.as_ref().map(|o| format!("sort_order: {o}")),
+        ]
+        .iter()
+        .flatten()
+        .join("\n");
+
+        formatdoc! {"
+            ---
+            layout: {layout}
+            title: {title}
+            categories:
+             - client
+            description: {description}
+            author: {authors}
+            maturity: {maturity}
+            language: {language}
+            license: {license}
+            sdk:
+            {sdk}
+            platform:
+            {platforms}
+            featured: {featured}
+            features:
+                E2EE: {e2ee}
+                Widgets: {widgets}
+                Spaces: {spaces}
+                Room directory: {room_directory}
+                Read receipts: {read_receipts}
+                Typing indicators: {typing_indicators}
+                Edits: {edits}
+                Replies: {replies}
+                Threads: {threads}
+                Attachements: {attachments}
+                Multi accounts: {multi_account}
+                Registration: {registration}
+                Calls: {calls}
+                Reactions: {reactions}
+                SSO: {sso}
+                Localised: {localised}
+            {optional_fields}
+            ---
+            {full_description}
+        "}
     }
 
     pub fn filename(&self) -> String {
