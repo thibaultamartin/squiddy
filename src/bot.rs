@@ -44,7 +44,7 @@ impl Bot {
             self.home.as_ref().map(|h| format!("home: {h}")),
             self.screenshot.as_ref().map(|s| format!("screenshot: {s}")),
             self.icon.as_ref().map(|i| format!("thumbnail: {i}")),
-            self.room.as_ref().map(|r| format!("room: {r}")),
+            self.room.as_ref().map(|r| format!("room: \"{r}\"")),
             self.sort_order.as_ref().map(|o| format!("sort_order: {o}")),
         ]
         .iter()
