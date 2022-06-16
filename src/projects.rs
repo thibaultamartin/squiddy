@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, self};
+use std::fmt::{self, Display, Formatter};
 
 use crate::bot::Bot;
 use crate::bridge::Bridge;
@@ -26,12 +26,12 @@ pub struct Projects {
     pub servers: Vec<Server>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub enum Maturity {
+    Obsolete,
     Alpha,
     Beta,
     Stable,
-    Obsolete,
 }
 
 impl Display for Maturity {

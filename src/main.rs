@@ -121,9 +121,8 @@ fn main() {
             MATRIXTO_PROJECTS_PATH,
             client.matrixto_filename()
         );
-        fs::write(&matrixto_project_path, client.matrixto_data_file()).unwrap_or_else(|_| {
-            panic!("Could not write project file {}", matrixto_project_path)
-        });
+        fs::write(&matrixto_project_path, client.matrixto_data_file())
+            .unwrap_or_else(|_| panic!("Could not write project file {}", matrixto_project_path));
 
         // TODO write project js from template if it doesn't already exist
         // TODO update index.js after the loop
@@ -248,5 +247,4 @@ fn main() {
     );
     println!("{} of them were updated", twim_projects_matched);
     println!("{} were just added", twim_projects_added);
-
 }

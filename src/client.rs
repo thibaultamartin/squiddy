@@ -32,12 +32,12 @@ pub struct AppStoreDetails {
     pub app_id: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, Hash, PartialEq)]
 pub enum Platform {
     Linux,
     Android,
     MacOS,
-    IOS,
+    Ios,
     Windows,
     DesktopWeb,
     MobileWeb,
@@ -51,7 +51,7 @@ pub struct Client {
     pub slug: Option<String>,       // e.g. "element"
     pub description: String, // e.g. "Element is a glossy web client with an emphasis on performance and usability"
     pub authors: Vec<Author>, // e.g. "Element"
-    pub maturity: Maturity,    // e.g. "Stable"
+    pub maturity: Maturity,  // e.g. "Stable"
     pub language: String,    // e.g. "JavaScript"
     pub license: String,     // e.g. "Apache-2.0"
     pub repository: Option<String>, // e.g. "https://github.com/vector-im/element-web/"
@@ -90,16 +90,15 @@ impl Client {
         let platforms = self
             .platforms
             .iter()
-            .map(|p| {
-                match p {
-                    Platform::Linux => "    - Linux",
-                    Platform::Android => "    - Android",
-                    Platform::MacOS=> "    - macOS",
-                    Platform::IOS => "    - iOS",
-                    Platform::Windows => "    - Windows",
-                    Platform::DesktopWeb => "    - Web",
-                    Platform::MobileWeb => "    - Web",
-            }})
+            .map(|p| match p {
+                Platform::Linux => "    - Linux",
+                Platform::Android => "    - Android",
+                Platform::MacOS => "    - macOS",
+                Platform::Ios => "    - iOS",
+                Platform::Windows => "    - Windows",
+                Platform::DesktopWeb => "    - Web",
+                Platform::MobileWeb => "    - Web",
+            })
             .format("\n");
         let featured = &self.featured;
         // Destructuring features to make the compiler scream if new fields are added and not rendered in markdown
@@ -190,16 +189,15 @@ impl Client {
     }
 
     pub fn matrixto_filename(&self) -> String {
-        self
-        .title
-        .to_case(Case::Camel)
-        .chars()
-        .map(|x| match x {
-            '/' => '-',
-            '\\' => '-',
-            _ => x,
-        })
-        .collect()
+        self.title
+            .to_case(Case::Camel)
+            .chars()
+            .map(|x| match x {
+                '/' => '-',
+                '\\' => '-',
+                _ => x,
+            })
+            .collect()
     }
 
     pub fn matrixto_data_file(&self) -> String {
@@ -217,28 +215,41 @@ impl Client {
         let platforms = self
             .platforms
             .iter()
-            .map(|p| {
-                match p {
-                    Platform::Linux => "Platform.Linux",
-                    Platform::Android => "Platform.Android",
-                    Platform::MacOS=> "Platform.macOS",
-                    Platform::IOS => "Platform.iOS",
-                    Platform::Windows => "Platform.Windows",
-                    Platform::DesktopWeb => "Platform.DesktopWeb",
-                    Platform::MobileWeb => "Platform.MobileWeb",
-                }
+            .map(|p| match p {
+                Platform::Linux => "Platform.Linux",
+                Platform::Android => "Platform.Android",
+                Platform::MacOS => "Platform.macOS",
+                Platform::Ios => "Platform.iOS",
+                Platform::Windows => "Platform.Windows",
+                Platform::DesktopWeb => "Platform.DesktopWeb",
+                Platform::MobileWeb => "Platform.MobileWeb",
             })
             .join(", ");
 
         let optional_fields = [
             self.icon.as_ref().map(|i| format!("\"icon\": \"{}\"", i)),
             self.home.as_ref().map(|h| format!("\"home\": \"{}\"", h)),
-            self.appstore_details.as_ref().map(|ad| format!("\"applestorelink\": new AppleStoreLink('{}', '{}')", ad.org, ad.app_id)),
-            self.apple_associated_app_id.as_ref().map(|a| format!("\"appleAssociatedAppId\": \"{}\"", a)),
-            self.playstore_app_id.as_ref().map(|p| format!("\"playstorelink\": new PlayStoreLink('{}')", p)),
-            self.fdroid_app_id.as_ref().map(|f| format!("\"fdroidlink\": new FDroidLink('{}')", f)),
-            self.flathub_app_id.as_ref().map(|f| format!("\"flathublink\": new FlathubLink('{}')", f)),
-            self.otherinstall_link.as_ref().map(|o| format!("\"defaultInstallLink\": new WebsiteLink('{}')", o)),
+            self.appstore_details.as_ref().map(|ad| {
+                format!(
+                    "\"applestorelink\": new AppleStoreLink('{}', '{}')",
+                    ad.org, ad.app_id
+                )
+            }),
+            self.apple_associated_app_id
+                .as_ref()
+                .map(|a| format!("\"appleAssociatedAppId\": \"{}\"", a)),
+            self.playstore_app_id
+                .as_ref()
+                .map(|p| format!("\"playstorelink\": new PlayStoreLink('{}')", p)),
+            self.fdroid_app_id
+                .as_ref()
+                .map(|f| format!("\"fdroidlink\": new FDroidLink('{}')", f)),
+            self.flathub_app_id
+                .as_ref()
+                .map(|f| format!("\"flathublink\": new FlathubLink('{}')", f)),
+            self.otherinstall_link
+                .as_ref()
+                .map(|o| format!("\"defaultInstallLink\": new WebsiteLink('{}')", o)),
         ]
         .iter()
         .flatten()
@@ -249,6 +260,151 @@ impl Client {
 
         export const data = {{
             \"id\": \"{id}\",
+            \"platforms\": [{platforms}],
+            \"name\": \"{name}\",
+            \"description\": \"{description}\",
+            \"author\": \"{authors}\",
+            \"maturity\": \"{maturity}\",
+            {optional_fields}
+        }};")
+    }
+
+    pub fn matrixto_join_file(id: String, clients: Vec<Client>) -> String {
+        let filtered_clients: Vec<Client> = clients.into_iter().filter(|c| c.id == id).collect();
+
+        let name = &id;
+        let description = filtered_clients
+            .clone()
+            .into_iter()
+            .find(|c| {
+                c.platforms.contains(&Platform::DesktopWeb)
+                    || c.platforms.contains(&Platform::Windows)
+                    || c.platforms.contains(&Platform::MacOS)
+            })
+            .unwrap()
+            .description;
+        let maturity = format!(
+            "Maturity.{}",
+            filtered_clients // Get the lowest maturity of all clients
+                .clone()
+                .into_iter()
+                .map(|c| c.maturity)
+                .min()
+                .unwrap()
+        );
+
+        let authors: String = if !filtered_clients.is_empty() {
+            // If there's more than one client with the same id, return "{client_id} team"
+            format!("{} team", &id)
+        } else {
+            filtered_clients[0]
+                .authors
+                .iter()
+                .map(|a| format!("{} {}", a.name, a.matrix_id.clone().unwrap_or_default()))
+                .join(", ")
+        };
+
+        let platforms = filtered_clients
+            .clone()
+            .into_iter()
+            .flat_map(|c| c.platforms)
+            .unique()
+            .collect::<Vec<Platform>>();
+
+        let platforms = platforms
+            .iter()
+            .map(|p| match p {
+                Platform::Linux => "Platform.Linux",
+                Platform::Android => "Platform.Android",
+                Platform::MacOS => "Platform.macOS",
+                Platform::Ios => "Platform.iOS",
+                Platform::Windows => "Platform.Windows",
+                Platform::DesktopWeb => "Platform.DesktopWeb",
+                Platform::MobileWeb => "Platform.MobileWeb",
+            })
+            .join(", ");
+
+        // We're looking for the first Client that has the field we're interested in
+        let icon = filtered_clients
+            .clone()
+            .into_iter()
+            .flat_map(|c| c.icon)
+            .find(|_| true);
+
+        let home = filtered_clients
+            .clone()
+            .into_iter()
+            .flat_map(|c| c.home)
+            .find(|_| true);
+
+        let appstore_details = filtered_clients
+            .clone()
+            .into_iter()
+            .flat_map(|c| c.appstore_details)
+            .find(|_| true);
+
+        let apple_associated_app_id = filtered_clients
+            .clone()
+            .into_iter()
+            .flat_map(|c| c.apple_associated_app_id)
+            .find(|_| true);
+
+        let playstore_app_id = filtered_clients
+            .clone()
+            .into_iter()
+            .flat_map(|c| c.playstore_app_id)
+            .find(|_| true);
+
+        let fdroid_app_id = filtered_clients
+            .clone()
+            .into_iter()
+            .flat_map(|c| c.fdroid_app_id)
+            .find(|_| true);
+
+        let flathub_app_id = filtered_clients
+            .clone()
+            .into_iter()
+            .flat_map(|c| c.flathub_app_id)
+            .find(|_| true);
+
+        let otherinstall_link = filtered_clients
+            .into_iter()
+            .flat_map(|c| c.otherinstall_link)
+            .find(|_| true);
+
+        let optional_fields = [
+            icon.as_ref().map(|i| format!("\"icon\": \"{}\"", i)),
+            home.as_ref().map(|h| format!("\"home\": \"{}\"", h)),
+            appstore_details.as_ref().map(|ad| {
+                format!(
+                    "\"applestorelink\": new AppleStoreLink('{}', '{}')",
+                    ad.org, ad.app_id
+                )
+            }),
+            apple_associated_app_id
+                .as_ref()
+                .map(|a| format!("\"appleAssociatedAppId\": \"{}\"", a)),
+            playstore_app_id
+                .as_ref()
+                .map(|p| format!("\"playstorelink\": new PlayStoreLink('{}')", p)),
+            fdroid_app_id
+                .as_ref()
+                .map(|f| format!("\"fdroidlink\": new FDroidLink('{}')", f)),
+            flathub_app_id
+                .as_ref()
+                .map(|f| format!("\"flathublink\": new FlathubLink('{}')", f)),
+            otherinstall_link
+                .as_ref()
+                .map(|o| format!("\"defaultInstallLink\": new WebsiteLink('{}')", o)),
+        ]
+        .iter()
+        .flatten()
+        .join(",\n");
+
+        formatdoc!("
+        import {{Maturity, Platform, FDroidLink, AppleStoreLink, PlayStoreLink, WebsiteLink, FlathubLink}} from \"../types.js\";
+        export const data = {{
+            \"id\": \"{name}\",
             \"platforms\": [{platforms}],
             \"name\": \"{name}\",
             \"description\": \"{description}\",
