@@ -189,7 +189,7 @@ impl Client {
     }
 
     pub fn matrixto_filename(&self) -> String {
-        self.title
+        self.id
             .to_case(Case::Camel)
             .chars()
             .map(|x| match x {
@@ -198,75 +198,6 @@ impl Client {
                 _ => x,
             })
             .collect()
-    }
-
-    pub fn matrixto_data_file(&self) -> String {
-        let id = &self.id;
-        let name = &self.title;
-        let description = &self.description;
-        let maturity = format!("Maturity.{}", &self.maturity);
-
-        let authors = self
-            .authors
-            .iter()
-            .map(|a| format!("{} {}", a.name, a.matrix_id.clone().unwrap_or_default()))
-            .format(", ");
-
-        let platforms = self
-            .platforms
-            .iter()
-            .map(|p| match p {
-                Platform::Linux => "Platform.Linux",
-                Platform::Android => "Platform.Android",
-                Platform::MacOS => "Platform.macOS",
-                Platform::Ios => "Platform.iOS",
-                Platform::Windows => "Platform.Windows",
-                Platform::DesktopWeb => "Platform.DesktopWeb",
-                Platform::MobileWeb => "Platform.MobileWeb",
-            })
-            .join(", ");
-
-        let optional_fields = [
-            self.icon.as_ref().map(|i| format!("\"icon\": \"{}\"", i)),
-            self.home.as_ref().map(|h| format!("\"home\": \"{}\"", h)),
-            self.appstore_details.as_ref().map(|ad| {
-                format!(
-                    "\"applestorelink\": new AppleStoreLink('{}', '{}')",
-                    ad.org, ad.app_id
-                )
-            }),
-            self.apple_associated_app_id
-                .as_ref()
-                .map(|a| format!("\"appleAssociatedAppId\": \"{}\"", a)),
-            self.playstore_app_id
-                .as_ref()
-                .map(|p| format!("\"playstorelink\": new PlayStoreLink('{}')", p)),
-            self.fdroid_app_id
-                .as_ref()
-                .map(|f| format!("\"fdroidlink\": new FDroidLink('{}')", f)),
-            self.flathub_app_id
-                .as_ref()
-                .map(|f| format!("\"flathublink\": new FlathubLink('{}')", f)),
-            self.otherinstall_link
-                .as_ref()
-                .map(|o| format!("\"defaultInstallLink\": new WebsiteLink('{}')", o)),
-        ]
-        .iter()
-        .flatten()
-        .join(",\n");
-
-        formatdoc!("
-        import {{Maturity, Platform, FDroidLink, AppleStoreLink, PlayStoreLink, WebsiteLink, FlathubLink}} from \"../types.js\";
-
-        export const data = {{
-            \"id\": \"{id}\",
-            \"platforms\": [{platforms}],
-            \"name\": \"{name}\",
-            \"description\": \"{description}\",
-            \"author\": \"{authors}\",
-            \"maturity\": \"{maturity}\",
-            {optional_fields}
-        }};")
     }
 
     pub fn matrixto_join_file(id: String, clients: Vec<Client>) -> String {
