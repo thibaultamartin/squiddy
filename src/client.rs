@@ -330,7 +330,7 @@ impl Client {
         ]
         .iter()
         .flatten()
-        .join(",\n");
+        .join(",\n    ");
 
         formatdoc!("
         import {{Maturity, Platform, FDroidLink, AppleStoreLink, PlayStoreLink, WebsiteLink, FlathubLink}} from \"../types.js\";
