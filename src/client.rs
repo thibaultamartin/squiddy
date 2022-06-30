@@ -218,8 +218,7 @@ impl Client {
         let maturity = format!(
             "Maturity.{}",
             filtered_clients // Get the lowest maturity of all clients
-                .clone()
-                .into_iter()
+                .iter()
                 .map(|c| c.maturity)
                 .min()
                 .unwrap()

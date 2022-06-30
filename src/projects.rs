@@ -26,7 +26,7 @@ pub struct Projects {
     pub servers: Vec<Server>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub enum Maturity {
     Obsolete,
     Alpha,
