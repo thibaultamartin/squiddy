@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path};
 
 use crate::client::Client;
 
@@ -118,19 +118,40 @@ fn main() {
             panic!("Could not write project file {}", matrixdotorg_project_path)
         });
 
-        let matrixto_project_path = format!(
+        let matrixto_file_path = format!(
+            "{}/{}.js",
+            MATRIXTO_PROJECTS_PATH,
+            client.matrixto_filename()
+        );
+
+        let matrixto_data_file_path = format!(
             "{}/{}-data.js",
             MATRIXTO_PROJECTS_PATH,
             client.matrixto_filename()
         );
         fs::write(
-            &matrixto_project_path,
+            &matrixto_data_file_path,
             Client::matrixto_join_file(client.id.clone(), projects.clients.clone()),
         )
-        .unwrap_or_else(|_| panic!("Could not write project file {}", matrixto_project_path));
+        .unwrap_or_else(|_| {
+            panic!(
+                "Could not write project data file {}",
+                matrixto_data_file_path
+            )
+        });
 
-        // TODO update index.js after the loop
+        if !Path::new(&matrixto_file_path).exists() {
+            fs::write(&matrixto_file_path, client.matrixto_template_file())
+                .unwrap_or_else(|_| panic!("Could not write project file {}", matrixto_file_path));
+        }
     }
+
+    let matrixto_index_path = format!("{}/index.js", MATRIXTO_PROJECTS_PATH);
+    fs::write(
+        &matrixto_index_path,
+        Client::matrixto_index((&projects.clients).clone()),
+    )
+    .unwrap_or_else(|_| panic!("Could not write matrix.to index.js file"));
 
     for iot in &projects.iots {
         let mut found = false;

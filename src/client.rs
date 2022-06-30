@@ -190,14 +190,15 @@ impl Client {
 
     pub fn matrixto_filename(&self) -> String {
         self.id
-            .to_case(Case::Camel)
             .chars()
-            .map(|x| match x {
+            .map(|c| match c {
                 '/' => '-',
                 '\\' => '-',
-                _ => x,
+                '.' => '-',
+                _ => c,
             })
-            .collect()
+            .collect::<String>()
+            .to_case(Case::UpperCamel)
     }
 
     pub fn matrixto_join_file(id: String, clients: Vec<Client>) -> String {
@@ -224,7 +225,7 @@ impl Client {
                 .unwrap()
         );
 
-        let authors: String = if !filtered_clients.is_empty() {
+        let authors: String = if filtered_clients.len() > 1 {
             // If there's more than one client with the same id, return "{client_id} team"
             format!("{} team", &id)
         } else {
@@ -340,8 +341,80 @@ impl Client {
             \"name\": \"{name}\",
             \"description\": \"{description}\",
             \"author\": \"{authors}\",
-            \"maturity\": \"{maturity}\",
+            \"maturity\": {maturity},
             {optional_fields}
         }};")
+    }
+
+    pub fn matrixto_template_file(&self) -> String {
+        format!(
+            "/*
+Copyright 2020 The Matrix.org Foundation C.I.C.
+Licensed under the Apache License, Version 2.0 (the \"License\");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an \"AS IS\" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+import {{Platform, LinkKind}} from \"../types.js\";
+import {{Client}} from \"./Client.js\";
+import {{data}} from \"./{}-data.js\";
+
+export class {} extends Client {{
+    constructor() {{
+        super(data);
+    }}
+}}",
+            self.matrixto_filename(),
+            self.matrixto_filename()
+        )
+    }
+
+    pub fn matrixto_index(clients: Vec<Client>) -> String {
+        let imports = clients
+            .iter()
+            .map(|c| {
+                format!(
+                    "import {{{}}} from \"./{}.js;\"",
+                    c.matrixto_filename(),
+                    c.matrixto_filename()
+                )
+            })
+            .dedup()
+            .join("\n");
+        let instances = clients
+            .iter()
+            .map(|c| format!("new {}()", c.matrixto_filename()))
+            .dedup()
+            .join(",\n        ");
+
+        format!(
+            "/*
+Copyright 2020 The Matrix.org Foundation C.I.C.
+Licensed under the Apache License, Version 2.0 (the \"License\");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an \"AS IS\" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+{}
+
+export function createClients() {{
+    return [
+        {}
+    ];
+}}",
+            imports, instances
+        )
     }
 }
