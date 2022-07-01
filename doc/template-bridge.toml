@@ -1,0 +1,25 @@
+[[bridges]]
+title = "Bridgeridoo"
+description = "Brigeridoo bridges the Ridoo platform to Matrix"
+maturity = "Stable" # can be Obsolete/Alpha/Beta/Stable
+language = "Python"
+license = "AGPL-3.0-or-later" # Has to be one of https://spdx.org/licenses/
+repository = "https://git.server.tld/bridgey" # optional
+home = "https://bridgey.tld" # optional
+screenshot = "/data/bridgey-screenshot.png" # optional
+icon = "/data/bridgey-icon.svg" # optional
+room = "#bridgey:server.tld" # optional
+featured = false
+full_description = """
+A multi-line description that supports markdown to describe the project extensively.
+
+For example, bridgey can:
+* open DMs
+* participate in conversations
+* send automatic replies
+"""
+[[bridges.authors]]
+name = "Fred"
+matrix_id = "@fred:server.tld"
+[[bridges.authors]]
+name = "Bridgey Inc."

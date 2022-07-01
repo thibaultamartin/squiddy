@@ -1,0 +1,23 @@
+[[servers]]
+title = "Oxynapse"
+description = "An attempt to oxidise synapse. Use at your own risk."
+maturity = "Alpha" # can be Obsolete/Alpha/Beta/Stable
+language = "Rust"
+license = "Apache-2.0" # Has to be one of https://spdx.org/licenses/
+repository = "https://git.server.tld/oxynapse" # optional
+home = "https://server.tld/oxynapse" # optional
+screenshot = "/data/oxynapse-screenshot.png" # optional
+icon = "/data/oxynapse-icon.svg" # optional
+room = "#oxynapse:server.tld" # optional
+featured = false
+full_description = """
+A multi-line description that supports markdown to describe the project extensively.
+
+Oxynapse is about oxdising all of Synapse. This is still early days, and I'm just
+a silly documentation example, don't take it for an easter egg or hidden announcement.
+"""
+[[servers.authors]]
+name = "Fred"
+matrix_id = "@fred:server.tld"
+[[servers.authors]]
+name = "Water & Iron LLC"
