@@ -2,7 +2,7 @@
 id = "ClientFromTheFuture" # Ideally UpperCamel case name of your project
 title = "Client From the Future"
 description = "A client that supports MSCs that haven't been written yet."
-maturity = "Alpha" can be Obsolete/Alpha/Beta/Stable
+maturity = "Alpha" # can be Obsolete/Alpha/Beta/Stable
 language = "TypeScript"
 license = "AGPL-3.0-only" # Has to be one of https://spdx.org/licenses/
 repository = "https://git.clientfromthefuture.tld/cftf" # optional
