@@ -7,26 +7,28 @@ use crate::projects::Author;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Iot {
-    pub layout: String,             // e.g. "projectimage"
-    pub title: String,              // e.g. "Element Web/Desktop"
-    pub description: String, // e.g. "Element is a glossy web client with an emphasis on performance and usability"
-    pub authors: Vec<Author>, // e.g. "Element"
-    pub maturity: String,    // e.g. "Stable"
-    pub language: String,    // e.g. "JavaScript"
-    pub license: String,     // e.g. "Apache-2.0"
-    pub repository: Option<String>, // e.g. "https://github.com/vector-im/element-web/"
-    pub home: Option<String>, // e.g. "https://element.io/"
-    pub screenshot: Option<String>, // e.g. "/docs/projects/images/riot-web-large.png"
-    pub icon: Option<String>, // e.g. "/docs/projects/images/riot-web-small.png"
-    pub room: Option<String>, // e.g. "#element-web:matrix.org"
-    pub featured: bool,      // e.g. true
-    pub sort_order: Option<i32>, // = 1
+    pub title: String,
+    pub description: String,
+    pub authors: Vec<Author>,
+    pub maturity: String,
+    pub language: String,
+    pub license: String,
+    pub repository: Option<String>,
+    pub home: Option<String>,
+    pub screenshot: Option<String>,
+    pub icon: Option<String>,
+    pub room: Option<String>,
+    pub featured: bool,
+    pub sort_order: Option<i32>,
     pub full_description: String,
 }
 
 impl Iot {
     pub fn to_markdown(&self) -> String {
-        let layout = &self.layout;
+        let layout = match self.icon {
+            Some(_) => "projectimage",
+            None => "project",
+        };
         let title = &self.title;
         let description = &self.description;
         let authors = self

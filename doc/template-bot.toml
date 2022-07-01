@@ -1,0 +1,27 @@
+[[bots]]
+title = "Botty"
+description = "Botty likes to do beep sounds whenever someone says \"beep bop\""
+maturity = "Beta" # can be Obsolete/Alpha/Beta/Stable
+language = "Python"
+license = "AGPL-3.0-or-later" # Has to be one of https://spdx.org/licenses/
+repository = "https://git.server.tld/botty" # optional
+home = "https://botty.tld" # optional
+screenshot = "/data/botty-screenshot.png" # optional
+icon = "/data/botty-icon.svg" # optional
+room = "#botty:server.tld" # optional
+featured = false
+full_description = """
+A multi-line description that supports markdown to describe the project extensively.
+
+For example, botty can:
+* boot
+* beep
+* be outraged if you don't say "beep bop" at least once a week
+
+It's _very important_ for botty to feel loved.
+"""
+[[bots.authors]]
+name = "Fred"
+matrix_id = "@fred:server.tld"
+[[bots.authors]]
+name = "The rest of the Botty team"

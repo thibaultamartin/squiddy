@@ -1,0 +1,23 @@
+[[iots]]
+title = "Matrix Goes Vroom"
+description = "MGV relies on Matrix to report health checks to the manufacturer of smart cars"
+maturity = "Stable" # can be Obsolete/Alpha/Beta/Stable
+language = "Rust"
+license = "AGPL-3.0-or-later" # Has to be one of https://spdx.org/licenses/
+repository = "https://git.matrixgoesvroom.tld/mgv" # optional
+home = "https://matrixgoesvroom.tld" # optional
+screenshot = "/data/matrixgoesvroom-screenshot.png" # optional
+icon = "/data/matrixgoesvroom-icon.svg" # optional
+room = "#matrixgoesvroom:server.tld" # optional
+featured = false
+full_description = """
+A multi-line description that supports markdown to describe the project extensively.
+
+Matrix Goes Vroom gets in electric vehicles, which don't really make Vroom but
+the name sounded funny.
+"""
+[[iots.authors]]
+name = "Fred"
+matrix_id = "@fred:server.tld"
+[[iots.authors]]
+name = "MGV Corp."

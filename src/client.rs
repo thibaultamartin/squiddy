@@ -45,24 +45,23 @@ pub enum Platform {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Client {
-    pub layout: String,             // e.g. "projectimage"
-    pub id: String,                 // e.g. "element.io"
-    pub title: String,              // e.g. "Element Web/Desktop"
-    pub slug: Option<String>,       // e.g. "element"
-    pub description: String, // e.g. "Element is a glossy web client with an emphasis on performance and usability"
-    pub authors: Vec<Author>, // e.g. "Element"
-    pub maturity: Maturity,  // e.g. "Stable"
-    pub language: String,    // e.g. "JavaScript"
-    pub license: String,     // e.g. "Apache-2.0"
-    pub repository: Option<String>, // e.g. "https://github.com/vector-im/element-web/"
-    pub home: Option<String>, // e.g. "https://element.io/"
-    pub screenshot: Option<String>, // e.g. "/docs/projects/images/riot-web-large.png"
-    pub icon: Option<String>, // e.g. "/docs/projects/images/riot-web-small.png"
-    pub room: Option<String>, // e.g. "#element-web:matrix.org"
-    pub sdk: Vec<String>,    // e.g. ["matrix-js-sdk", "matrix-react-sdk"]
-    pub platforms: Vec<Platform>, // e.g. ["Linux", "macOS", "Windows", "DesktopWeb"]
-    pub featured: bool,      // e.g. true
-    pub sort_order: Option<i32>, // = 1
+    pub id: String,
+    pub title: String,
+    pub slug: Option<String>,
+    pub description: String,
+    pub authors: Vec<Author>,
+    pub maturity: Maturity,
+    pub language: String,
+    pub license: String,
+    pub repository: Option<String>,
+    pub home: Option<String>,
+    pub screenshot: Option<String>,
+    pub icon: Option<String>,
+    pub room: Option<String>,
+    pub sdk: Vec<String>,
+    pub platforms: Vec<Platform>,
+    pub featured: bool,
+    pub sort_order: Option<i32>,
     pub features: Features,
     pub appstore_details: Option<AppStoreDetails>,
     pub apple_associated_app_id: Option<String>,
@@ -75,7 +74,10 @@ pub struct Client {
 
 impl Client {
     pub fn to_markdown(&self) -> String {
-        let layout = &self.layout;
+        let layout = match self.icon {
+            Some(_) => "projectimage",
+            None => "project",
+        };
         let title = &self.title;
         let description = &self.description;
         let authors = self

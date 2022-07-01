@@ -1,0 +1,24 @@
+[[sdks]]
+title = "Matrix Elixir SDK"
+description = "A SDK that doesn't really exist but that would be fun"
+maturity = "Beta" # can be Obsolete/Alpha/Beta/Stable
+language = "Elix"
+license = "AGPL-3.0-or-later" # Has to be one of https://spdx.org/licenses/
+repository = "https://git.server.tld/elixir" # optional
+home = "https://elixir-sdk-project.tld/sdk" # optional
+screenshot = "/data/elixir-sdk-screenshot.png" # optional
+icon = "/data/elixir-icon.svg" # optional
+room = "#elixir-sdk:server.tld" # optional
+featured = false
+full_description = """
+A multi-line description that supports markdown to describe the project extensively.
+
+For example, the Elixir SDK 
+* supports e2ee
+* allows to very easily create bots
+"""
+[[sdks.authors]]
+name = "Fred"
+matrix_id = "@fred:server.tld"
+[[sdks.authors]]
+name = "The Alchemists Gang"

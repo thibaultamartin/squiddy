@@ -1,0 +1,47 @@
+[[clients]]
+id = "ClientFromTheFuture" # Ideally UpperCamel case name of your project
+title = "Client From the Future"
+description = "A client that supports MSCs that haven't been written yet."
+maturity = "Alpha" # can be Obsolete/Alpha/Beta/Stable
+language = "TypeScript"
+license = "AGPL-3.0-only" # Has to be one of https://spdx.org/licenses/
+repository = "https://git.clientfromthefuture.tld/cftf" # optional
+home = "https://clientfromthefuture.tld" # optional
+screenshot = "/data/cftf-screenshot.png" # optional
+room = "#clientfromthefuture:server.tld" # optional
+platforms = ["Linux", "MacOS", "Windows", "DesktopWeb", "MobileWeb", "Android", "Ios"]
+sdk = ["matrix-js-sdk"] # mandatory but can be empty
+featured = false
+features.e2ee = "yes"
+features.widgets = "yes"
+features.spaces = "yes"
+features.room_directory = "yes"
+features.read_receipts = "yes"
+features.typing_indicators = "yes"
+features.edits = "yes"
+features.replies = "yes"
+features.threads = "yes"
+features.attachments = "yes"
+features.multi_account = "no"
+features.registration = "yes"
+features.calls = "yes"
+features.reactions = "yes"
+features.sso = "yes"
+features.localised = "yes"
+flathub_app_id = "tld.clientfromthefuture.cftf" # optional
+appstore_details.org = "clientinc" # optional
+appstore_details.app_id = "id1234567890" # optional
+playstore_app_id = "tld.clientfromthefuture.cftf" # optional
+fdroid_app_id = "tld.clientfromthefuture.cftf" # optional
+otherinstall_link = "https://clientfromthefuture.tld/install" # optional
+full_description = """
+A multi-line description to describe how great Client From the Future is.
+
+CFTF goes beyond being a regular Matrix client: it traveled through time to
+bring all the awesomeness from the next decades.
+"""
+[[clients.authors]]
+name = "Marty McBee"
+matrix_id = "@marty:server.tld"
+[[clients.authors]]
+name = "The Physician"

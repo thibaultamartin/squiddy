@@ -1,0 +1,25 @@
+[[others]]
+title = "Matrix Mapping"
+description = "A project to crawl the whole Matrix public federation"
+maturity = "Beta" # can be Obsolete/Alpha/Beta/Stable
+language = "TypeScript"
+license = "AGPL-3.0-or-later" # Has to be one of https://spdx.org/licenses/
+repository = "https://git.server.tld/mamap" # optional
+home = "https://mamap.tld" # optional
+screenshot = "/data/mamap-screenshot.png" # optional
+icon = "/data/mamap-icon.svg" # optional
+room = "#mamap:server.tld" # optional
+featured = false
+full_description = """
+A multi-line description that supports markdown to describe the project extensively.
+
+For example, mamap can:
+* crawl rooms
+* link them together as it finds new room aliases
+* generate a fancy graph of how rooms were discoveres
+"""
+[[bridges.authors]]
+name = "Fred"
+matrix_id = "@fred:server.tld"
+[[bridges.authors]]
+name = "The Matrix Mapping Project"
