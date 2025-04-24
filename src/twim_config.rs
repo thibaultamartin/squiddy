@@ -14,6 +14,7 @@ pub struct Project {
     pub website: String,
     pub default_section: String,
     pub usual_reporters: Vec<String>,
+    pub project_type: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash, Default)]
@@ -58,6 +59,7 @@ impl From<&Bot> for Project {
                 .iter()
                 .filter_map(|author| author.matrix_id.clone())
                 .collect(),
+            project_type: String::from("bot"),
         }
     }
 }
@@ -80,6 +82,7 @@ impl From<&Bridge> for Project {
                 .iter()
                 .filter_map(|author| author.matrix_id.clone())
                 .collect(),
+            project_type: String::from("bridge"),
         }
     }
 }
@@ -102,6 +105,7 @@ impl From<&Client> for Project {
                 .iter()
                 .filter_map(|author| author.matrix_id.clone())
                 .collect(),
+            project_type: String::from("client"),
         }
     }
 }
@@ -124,6 +128,7 @@ impl From<&Iot> for Project {
                 .iter()
                 .filter_map(|author| author.matrix_id.clone())
                 .collect(),
+            project_type: String::from("iot"),
         }
     }
 }
@@ -146,6 +151,7 @@ impl From<&Other> for Project {
                 .iter()
                 .filter_map(|author| author.matrix_id.clone())
                 .collect(),
+            project_type: String::from("other"),
         }
     }
 }
@@ -168,6 +174,7 @@ impl From<&Sdk> for Project {
                 .iter()
                 .filter_map(|author| author.matrix_id.clone())
                 .collect(),
+            project_type: String::from("sdk"),
         }
     }
 }
@@ -190,6 +197,7 @@ impl From<&Server> for Project {
                 .iter()
                 .filter_map(|author| author.matrix_id.clone())
                 .collect(),
+            project_type: String::from("server"),
         }
     }
 }

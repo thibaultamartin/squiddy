@@ -1,6 +1,10 @@
 use std::{fs, path::Path};
 
+use tracing::{info, warn};
+
 use crate::client::Client;
+use crate::git::clone_repositories;
+use crate::twim_config::Project;
 
 mod bot;
 mod bridge;
@@ -11,17 +15,60 @@ mod projects;
 mod sdk;
 mod server;
 mod twim_config;
+mod git;
+
+const PROJECT_DATA_PATH: &str = "./data/projects.toml";
+const REPOSITORIES_CONFIG_PATH: &str = "./data/repositories.toml";
+const TWIM_CONFIG_PATH: &str = "../twim-config/config.toml";
+const MATRIXDOTORG_PROJECTS_PATH: &str = "../matrix.org/gatsby/content/projects";
+const MATRIXTO_PROJECTS_PATH: &str = "../matrix.to/src/open/clients";
 
 fn main() {
-    const PROJECT_DATA_PATH: &str = "./data/projects.toml";
-    const TWIM_CONFIG_PATH: &str = "../twim-config/config.toml";
-    const MATRIXDOTORG_PROJECTS_PATH: &str = "../matrix.org/gatsby/content/projects";
-    const MATRIXTO_PROJECTS_PATH: &str = "../matrix.to/src/open/clients";
+    tracing_subscriber::fmt::init();
+
+    // Get locally stored projects data
     let projects_file = fs::read_to_string(PROJECT_DATA_PATH).expect("Unable to open master data file");
 
     let projects: projects::Projects =
         toml::from_str(&projects_file).expect("Unable to parse master data file");
 
+    // Prepare fetching the repositories and projects data
+    let repositories_file =
+        fs::read_to_string(REPOSITORIES_CONFIG_PATH).expect("Unable to open repositories file");
+
+    let repositories: projects::Repositories =
+        toml::from_str(&repositories_file).expect("Unable to parse repositories file");
+
+    let remote_projects = clone_repositories(repositories);
+
+    // TODO: Merge the fetched data on top of the existing data
+
+    process_projects(projects);
+}
+
+// Check if the project is already in the twim-config
+fn insert_or_update_twim_config(twim_config: &mut twim_config::Config, project: Project, twim_projects_matched: &mut usize, twim_projects_added: &mut usize) {
+    let mut found = false;
+    for twim_project in &mut twim_config.projects {
+        if twim_project.title == project.title {
+            *twim_project = project.clone();
+            found = true;
+            break;
+        }
+    }
+
+    if !found {
+        warn!("Didn't find {} in twim-config, adding", project.title);
+        *twim_projects_added += 1;
+        twim_config
+            .projects
+            .push(project);
+    } else {
+        *twim_projects_matched += 1;
+    }
+}
+
+fn process_projects(projects: projects::Projects) {
     let twim_config_file = fs::read_to_string(TWIM_CONFIG_PATH).expect("Unable to open twim config file");
     let mut twim_config: twim_config::Config =
         toml::from_str(&twim_config_file).expect("Unable to parse twim-config file");
@@ -29,28 +76,13 @@ fn main() {
     let mut twim_projects_matched = 0;
     let mut twim_projects_added = 0;
 
-    println!(
+    info!(
         "TWIM Config contains {} projects",
         twim_config.projects.len()
     );
 
     for bot in &projects.bots {
-        let mut found = false;
-        for twim_project in &mut twim_config.projects {
-            if bot.title == twim_project.title {
-                println!("Found {} in data and twim-config", twim_project.title);
-                twim_projects_matched += 1;
-                *twim_project = twim_config::Project::from(bot);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            println!("Didn't find {} in twim-config, adding", bot.title);
-            twim_projects_added += 1;
-            twim_config.projects.push(twim_config::Project::from(bot));
-        }
+        insert_or_update_twim_config(&mut twim_config, twim_config::Project::from(bot), &mut twim_projects_matched, &mut twim_projects_added);
 
         let matrixdotorg_project_path =
             format!("{}/bots/{}", MATRIXDOTORG_PROJECTS_PATH, bot.filename());
@@ -60,24 +92,7 @@ fn main() {
     }
 
     for bridge in &projects.bridges {
-        let mut found = false;
-        for twim_project in &mut twim_config.projects {
-            if bridge.title == twim_project.title {
-                println!("Found {} in data and twim-config", twim_project.title);
-                twim_projects_matched += 1;
-                *twim_project = twim_config::Project::from(bridge);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            println!("Didn't find {} in twim-config, adding", bridge.title);
-            twim_projects_added += 1;
-            twim_config
-                .projects
-                .push(twim_config::Project::from(bridge));
-        }
+        insert_or_update_twim_config(&mut twim_config, twim_config::Project::from(bridge), &mut twim_projects_matched, &mut twim_projects_added);
 
         let matrixdotorg_project_path = format!(
             "{}/bridges/{}",
@@ -90,24 +105,7 @@ fn main() {
     }
 
     for client in &projects.clients {
-        let mut found = false;
-        for twim_project in &mut twim_config.projects {
-            if client.title == twim_project.title {
-                println!("Found {} in data and twim-config", twim_project.title);
-                twim_projects_matched += 1;
-                *twim_project = twim_config::Project::from(client);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            println!("Didn't find {} in twim-config, adding", client.title);
-            twim_projects_added += 1;
-            twim_config
-                .projects
-                .push(twim_config::Project::from(client));
-        }
+        insert_or_update_twim_config(&mut twim_config, twim_config::Project::from(client), &mut twim_projects_matched, &mut twim_projects_added);
 
         let matrixdotorg_project_path = format!(
             "{}/clients/{}",
@@ -133,12 +131,12 @@ fn main() {
             &matrixto_data_file_path,
             Client::matrixto_join_file(client.id.clone(), projects.clients.clone()),
         )
-        .unwrap_or_else(|_| {
-            panic!(
-                "Could not write project data file {}",
-                matrixto_data_file_path
-            )
-        });
+            .unwrap_or_else(|_| {
+                panic!(
+                    "Could not write project data file {}",
+                    matrixto_data_file_path
+                )
+            });
 
         if !Path::new(&matrixto_file_path).exists() {
             fs::write(&matrixto_file_path, client.matrixto_template_file())
@@ -149,27 +147,12 @@ fn main() {
     let matrixto_index_path = format!("{}/index.js", MATRIXTO_PROJECTS_PATH);
     fs::write(
         &matrixto_index_path,
-        Client::matrixto_index((&projects.clients).clone()),
+        Client::matrixto_index(projects.clients.clone()),
     )
-    .unwrap_or_else(|_| panic!("Could not write matrix.to index.js file"));
+        .unwrap_or_else(|_| panic!("Could not write matrix.to index.js file"));
 
     for iot in &projects.iots {
-        let mut found = false;
-        for twim_project in &mut twim_config.projects {
-            if iot.title == twim_project.title {
-                println!("Found {} in data and twim-config", twim_project.title);
-                twim_projects_matched += 1;
-                *twim_project = twim_config::Project::from(iot);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            println!("Didn't find {} in twim-config, adding", iot.title);
-            twim_projects_added += 1;
-            twim_config.projects.push(twim_config::Project::from(iot));
-        }
+        insert_or_update_twim_config(&mut twim_config, twim_config::Project::from(iot), &mut twim_projects_matched, &mut twim_projects_added);
 
         let matrixdotorg_project_path =
             format!("{}/iot/{}", MATRIXDOTORG_PROJECTS_PATH, iot.filename());
@@ -179,22 +162,7 @@ fn main() {
     }
 
     for other in &projects.others {
-        let mut found = false;
-        for twim_project in &mut twim_config.projects {
-            if other.title == twim_project.title {
-                println!("Found {} in data and twim-config", twim_project.title);
-                twim_projects_matched += 1;
-                *twim_project = twim_config::Project::from(other);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            println!("Didn't find {} in twim-config, adding", other.title);
-            twim_projects_added += 1;
-            twim_config.projects.push(twim_config::Project::from(other));
-        }
+        insert_or_update_twim_config(&mut twim_config, twim_config::Project::from(other), &mut twim_projects_matched, &mut twim_projects_added);
 
         let matrixdotorg_project_path =
             format!("{}/other/{}", MATRIXDOTORG_PROJECTS_PATH, other.filename());
@@ -204,22 +172,7 @@ fn main() {
     }
 
     for sdk in &projects.sdks {
-        let mut found = false;
-        for twim_project in &mut twim_config.projects {
-            if sdk.title == twim_project.title {
-                println!("Found {} in data and twim-config", twim_project.title);
-                twim_projects_matched += 1;
-                *twim_project = twim_config::Project::from(sdk);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            println!("Didn't find {} in twim-config, adding", sdk.title);
-            twim_projects_added += 1;
-            twim_config.projects.push(twim_config::Project::from(sdk));
-        }
+        insert_or_update_twim_config(&mut twim_config, twim_config::Project::from(sdk), &mut twim_projects_matched, &mut twim_projects_added);
 
         let matrixdotorg_project_path =
             format!("{}/sdks/{}", MATRIXDOTORG_PROJECTS_PATH, sdk.filename());
@@ -229,24 +182,7 @@ fn main() {
     }
 
     for server in &projects.servers {
-        let mut found = false;
-        for twim_project in &mut twim_config.projects {
-            if server.title == twim_project.title {
-                println!("Found {} in data and twim-config", twim_project.title);
-                twim_projects_matched += 1;
-                *twim_project = twim_config::Project::from(server);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            println!("Didn't find {} in twim-config, adding", server.title);
-            twim_projects_added += 1;
-            twim_config
-                .projects
-                .push(twim_config::Project::from(server));
-        }
+        insert_or_update_twim_config(&mut twim_config, twim_config::Project::from(server), &mut twim_projects_matched, &mut twim_projects_added);
 
         let matrixdotorg_project_path = format!(
             "{}/servers/{}",
@@ -261,15 +197,15 @@ fn main() {
     fs::write(TWIM_CONFIG_PATH, toml::to_string(&twim_config).unwrap())
         .expect("Unable to write to twim-config");
 
-    println!(
+    info!(
         "{} of them are not known in the meta repository",
         twim_config.projects.len() - twim_projects_matched
     );
 
-    println!(
+    info!(
         "TWIM-Config now contains {} projects",
         twim_config.projects.len()
     );
-    println!("{} of them were updated", twim_projects_matched);
-    println!("{} were just added", twim_projects_added);
+    info!("{} of them were updated", twim_projects_matched);
+    info!("{} were just added", twim_projects_added);
 }

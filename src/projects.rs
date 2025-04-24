@@ -1,5 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
+use serde::{Deserialize, Serialize};
+
 use crate::bot::Bot;
 use crate::bridge::Bridge;
 use crate::client::Client;
@@ -7,7 +9,6 @@ use crate::iot::Iot;
 use crate::other::Other;
 use crate::sdk::Sdk;
 use crate::server::Server;
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Author {
@@ -16,6 +17,18 @@ pub struct Author {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct RepositoryMetdata {
+    pub url: String,
+    // This is so that we could add other formats in the future
+    pub appstream_location: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Repositories {
+    pub repositories: Vec<RepositoryMetdata>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct Projects {
     pub bots: Vec<Bot>,
     pub bridges: Vec<Bridge>,
